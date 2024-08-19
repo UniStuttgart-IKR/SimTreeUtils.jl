@@ -1,0 +1,7 @@
+PARAMSDICT=Dict{String, Any}()
+PARAMSDICT["topology"]="BA4_2"
+PARAMSDICT["spectslots"]=50
+PARAMSDICT["demandvalues"]="4_6_8"
+PARAMSDICT["pomdp"]="RSAPOMDP1_1_1_1"
+PARAMSDICT["kpaths"]=5
+PARAMSDICT["jblocks"]=2

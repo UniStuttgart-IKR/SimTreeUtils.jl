@@ -1,0 +1,7 @@
+DATA_PATH = "a"
+SIMTREE_RESULTS_PATH = "a"
+n = "1"
+p = "sim.par"
+g = "sim.par.log"
+l = "none"
+s = "1"
