@@ -64,8 +64,10 @@ function stsimulate(simulatefunction;savefile=true)
         @warn "Datapath not set using pwd/data"
         datapath = "$(pwd())/data"
     end
+    PARAMSDICT["stresultspath"]=SIMTREE_RESULTS_PATH
+    @show PARAMSDICT
     results = simulatefunction(PARAMSDICT, SEED,datapath)
-    @show results
+    # @show results
     if savefile
     BSON.bson("$SIMTREE_RESULTS_PATH/study.bson", results)
     end
