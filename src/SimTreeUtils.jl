@@ -10,7 +10,7 @@ using TOML
 
 export copyresults, findrelpaths, getparameters, simsnum, getsims, getsimspath
 
-include("simulation.jl")
+# include("simulation.jl")
 include("loaddata.jl")
 include("metaanalysis.jl")
 
