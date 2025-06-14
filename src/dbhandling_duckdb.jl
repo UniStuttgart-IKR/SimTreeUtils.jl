@@ -16,7 +16,7 @@ end
 #
 #    return stDataBase(dbFile, con, "")
 #end
-function CloseDataBase(session::SimTreeUtils.SimTreeSession)
+function CloseDuckDB(session::SimTreeUtils.SimTreeSession)
     if session.duckDBfile == ":memory:"
         @error "Not implemented!"
         return
@@ -33,9 +33,9 @@ function CloseDataBase(session::SimTreeUtils.SimTreeSession)
     session.duckDBcon = nothing
 end
 
-function CreateBaseTable(session::SimTreeUtils.SimTreeSession)
+function CreateDuckDBBaseTable(session::SimTreeUtils.SimTreeSession)
 
-    CreateTable(session, "base", 
+    CreateDuckDBTable(session, "base", 
         Dict{String, Type}("SEED" => Int,
         "datapath" => String,
         ((k => typeof(v)) for (k, v) in session.PARAMSDICT)...))
@@ -51,7 +51,7 @@ const julia_to_sql = Dict(
     Missing => "NULL"
 )
 
-function CreateTable(session::SimTreeUtils.SimTreeSession,
+function CreateDuckDBTable(session::SimTreeUtils.SimTreeSession,
     tableName::String,
     columns::OrderedDict{String, Type})::stDataTable
 
@@ -62,12 +62,12 @@ function CreateTable(session::SimTreeUtils.SimTreeSession,
     datatable = stDataTable(session, tableName, columns)
     #Alter Table & Create new Columns, if TABLE exists
     for (k, v) in columns
-        datatable = AddTableColumn(datatable, k, v)
+        datatable = AddDuckDBTableColumn(datatable, k, v)
     end
     return datatable
 end
 
-function AddTableColumn(table::stDataTable, column::String, columntype::Type)::stDataTable
+function AddDuckDBTableColumn(table::stDataTable, column::String, columntype::Type)::stDataTable
     sqltype = get(julia_to_sql, columntype, "TEXT")
 
     DBInterface.execute(table.session.duckDBcon, "ALTER TABLE $(table.tableName) ADD COLUMN IF NOT EXISTS $column $sqltype")
@@ -79,33 +79,33 @@ function AddTableColumn(table::stDataTable, column::String, columntype::Type)::s
     return table
 end
 
-function AddRow(table::stDataTable, data::Vector)
+function AddDuckDBTableRow(table::stDataTable, data::Vector)
     columns = join([v for (v) in data], ", ")
     DBInterface.execute(table.session.duckDBcon, "INSERT INTO $(table.tableName) VALUES($columns)")
 end
-function AddRow(table::stDataTable, data::Dict{String, Any})
+function AddDuckDBTableRow(table::stDataTable, data::Dict{String, Any})
     columns = join(["$v AS $k" for (k, v) in data], ", ")
     DBInterface.execute(table.session.duckDBcon, "INSERT INTO $(table.tableName) BY NAME (SELECT $columns)")
 end
 
-#Aufruf SelectData mit Open/Close-DB
-#function SelectData(session::SimTreeUtils.SimTreeSession, table::String; limit::Integer=8, Columns::String="*")::DataFrame
+#Aufruf SelectDuckDBData mit Open/Close-DB
+#function SelectDuckDBData(session::SimTreeUtils.SimTreeSession, table::String; limit::Integer=8, Columns::String="*")::DataFrame
 #    #database = OpenDatabase(datapath::String, dbname::String)
-#    data = SelectData(session, table; limit, Columns)
-#    CloseDataBase(session)
+#    data = SelectDuckDBData(session, table; limit, Columns)
+#    CloseDuckDB(session)
 #    return data
 #end
-function SelectData(session::SimTreeUtils.SimTreeSession, table::String; limit::Integer=8, Columns::String="*")::DataFrame
+function SelectDuckDBData(session::SimTreeUtils.SimTreeSession, table::String; limit::Integer=8, Columns::String="*")::DataFrame
     return DBInterface.execute(session.duckDBcon, "SELECT $(Columns) FROM $(table) LIMIT $(limit);") |> DataFrames.DataFrame
 end
 
-#Aufruf ViewDBSchema mit Open/Close-DB
-#function ViewDBSchema(db::string)
+#Aufruf ViewDuckDBScheme mit Open/Close-DB
+#function ViewDuckDBScheme(db::string)
 #    database = OpenDatabase(datapath::String, dbname::String)
-#    ViewDBSchema(session)
-#    CloseDataBase(session)
+#    ViewDuckDBScheme(session)
+#    CloseDuckDB(session)
 #end
-function ViewDBSchema(session::SimTreeUtils.SimTreeSession)
+function ViewDuckDBScheme(session::SimTreeUtils.SimTreeSession)
     tables = DBInterface.execute(session.duckDBcon, "SHOW ALL TABLES") |> DataFrame
     println(tables)
     for tableRow in eachrow(tables)
@@ -118,7 +118,7 @@ function ViewDBSchema(session::SimTreeUtils.SimTreeSession)
             schema = DBInterface.execute(session.duckDBcon, "DESCRIBE $(table)") |> DataFrame
             println(schema)
 
-            println(SelectData(session, table))
+            println(SelectDuckDBData(session, table))
         end
     end
 end
@@ -126,9 +126,9 @@ end
 #Temporary easy plotting function
 function plotXY(session::SimTreeUtils.SimTreeSession, table::String, colX::String, colY::Matrix{String}; limit::Integer=8)
     #database = OpenDatabase(datapath::String, dbname::String)
-    x = SelectData(session, table; limit, Columns=colX)
-    y = SelectData(session, table; limit, Columns=join(colY, ", "))
-    CloseDataBase(session)
+    x = SelectDuckDBData(session, table; limit, Columns=colX)
+    y = SelectDuckDBData(session, table; limit, Columns=join(colY, ", "))
+    CloseDuckDB(session)
     
     Plots.plot(Matrix(x), Matrix(y), title="$(session.app)/$table", labels=colY, xlabel="$colX")
 end
