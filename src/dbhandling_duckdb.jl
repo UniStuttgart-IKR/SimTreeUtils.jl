@@ -36,7 +36,7 @@ end
 function CreateDuckDBBaseTable(session::SimTreeUtils.SimTreeSession)
 
     CreateDuckDBTable(session, "base", 
-        Dict{String, Type}("SEED" => Int,
+        OrderedDictDict{String, Type}("SEED" => Int,
         "datapath" => String,
         ((k => typeof(v)) for (k, v) in session.PARAMSDICT)...))
 end
@@ -84,6 +84,10 @@ function AddDuckDBTableRow(table::stDataTable, data::Vector)
     DBInterface.execute(table.session.duckDBcon, "INSERT INTO $(table.tableName) VALUES($columns)")
 end
 function AddDuckDBTableRow(table::stDataTable, data::Dict{String, Any})
+    columns = join(["$v AS $k" for (k, v) in data], ", ")
+    DBInterface.execute(table.session.duckDBcon, "INSERT INTO $(table.tableName) BY NAME (SELECT $columns)")
+end
+function AddDuckDBTableRow(table::stDataTable, data::OrderedDict{String, Any})
     columns = join(["$v AS $k" for (k, v) in data], ", ")
     DBInterface.execute(table.session.duckDBcon, "INSERT INTO $(table.tableName) BY NAME (SELECT $columns)")
 end

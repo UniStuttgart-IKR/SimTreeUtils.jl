@@ -27,6 +27,15 @@ function InitializeSession(app::String; useLokiLogger::Bool=true, useDuckDB::Boo
 
     return SaveSession(session)
 end
+function TestSession(;app::String="TestSession", useLokiLogger::Bool=true, useDuckDB::Bool=true, useSQLite::Bool=true)::SimTreeUtils.SimTreeSession
+    session = SimTreeUtils.SimTreeSession(app, nothing, nothing, nothing, nothing,  #Simulation Parameters
+        useLokiLogger, simloginit(app), nothing, nothing,                           #Loki Logger Init
+        useDuckDB, nothing, nothing,                                                #DuckDB Init
+        useSQLite, nothing, nothing)                                                #SQLite Init
+
+    PrepareSession(session, "$(pwd())", Dict{String, Any}("param1"=>1, "param2"=>0.01, "param3"=>"test"), 1, "$(pwd())")
+    return SaveSession(session)
+end
 
 function PrepareSession(session::SimTreeUtils.SimTreeSession, SIMTREE_RESULTS_PATH::String, PARAMSDICT::Dict{String, Any}, SEED::Int, datapath::String)
     session.SIMTREE_RESULTS_PATH = SIMTREE_RESULTS_PATH
@@ -42,14 +51,14 @@ function PrepareSession(session::SimTreeUtils.SimTreeSession, SIMTREE_RESULTS_PA
 
     #Initialize DuckDB Connection+DB (One DB per Parameter-Set)
     if session.useDuckDB
-        session.duckDBfile = "$SIMTREE_RESULTS_PATH/$(session.app)).duckdb"
+        session.duckDBfile = "$SIMTREE_RESULTS_PATH/$(session.app).duckdb"
         session.duckDBcon = DBInterface.connect(DuckDB.DB, session.duckDBfile) #Open File & Create if not exist
         #CreateBaseTable(OpenDatabase(SIMTREE_RESULTS_PATH, "database"), PARAMSDICT, SEED, datapath)
     end
 
     #Initialize SQLIte Connection+DB (One single DB with multiple Write-Connections => WAL)
     if session.useSQLite
-        session.sqliteFile = "$SIMTREE_RESULTS_PATH/$(session.app)).sqlite"
+        session.sqliteFile = "$SIMTREE_RESULTS_PATH/$(session.app).sqlite"
         session.sqliteCon = nothing # DBInterface.connect(DuckDB.DB, session.sqliteFile)
     end
 
