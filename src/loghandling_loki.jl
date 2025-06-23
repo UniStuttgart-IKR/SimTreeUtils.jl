@@ -29,42 +29,82 @@ end
 
 #Logging der Init-Ereignisse
 function logInit(session::SimTreeUtils.SimTreeSession, data::String; level::Logging.LogLevel=Logging.Info)
+    if session.useLokiLogger == false
+        return
+    end
+
     _lokiLog(session.lokiInit, data, level)
 end
 function logInit(session::SimTreeUtils.SimTreeSession, data::Dict{String, Any}; level::Logging.LogLevel=Logging.Info)
+    if session.useLokiLogger == false
+        return
+    end
+    
     json = JSON3.write(data)
     _lokiLog(session.lokiInit, string(json), level)
 end
 function logInit(session::SimTreeUtils.SimTreeSession, data::OrderedDict{String, Any}; level::Logging.LogLevel=Logging.Info)
+    if session.useLokiLogger == false
+        return
+    end
+    
     json = JSON3.write(data)
     _lokiLog(session.lokiInit, string(json), level)
 end
 #Logging der Produktiv-Ereignisse
 function logProd(session::SimTreeUtils.SimTreeSession, data::String; level::Logging.LogLevel=Logging.Info)
+    if session.useLokiLogger == false
+        return
+    end
+    
     _lokiLog(session.lokiProd, data, level)
 end
 function logProd(session::SimTreeUtils.SimTreeSession, data::Dict{String, Any}; level::Logging.LogLevel=Logging.Info)
+    if session.useLokiLogger == false
+        return
+    end
+    
     json = JSON3.write(data)
     _lokiLog(session.lokiProd, string(json), level)
 end
 function logProd(session::SimTreeUtils.SimTreeSession, data::OrderedDict{String, Any}; level::Logging.LogLevel=Logging.Info)
+    if session.useLokiLogger == false
+        return
+    end
+    
     json = JSON3.write(data)
     _lokiLog(session.lokiProd, string(json), level)
 end
 #Logging von Rohdaten als JSON
 function logData(session::SimTreeUtils.SimTreeSession, data::Dict{String, Any}; level::Logging.LogLevel=Logging.Info)
+    if session.useLokiLogger == false
+        return
+    end
+    
     json = JSON3.write(data)
     _lokiLog(session.lokiData, string(json), level)
 end
 function logData(session::SimTreeUtils.SimTreeSession, data::OrderedDict{String, Any}; level::Logging.LogLevel=Logging.Info)
+    if session.useLokiLogger == false
+        return
+    end
+    
     json = JSON3.write(data)
     _lokiLog(session.lokiData, string(json), level)
 end
 function logData(session::SimTreeUtils.SimTreeSession, column::String, data::Any; level::Logging.LogLevel=Logging.Info)
+    if session.useLokiLogger == false
+        return
+    end
+    
     logData(session, Dict{String, Any}(column => data); level)
 end
 
 function _lokiLog(logger::LokiLogger.Logger, data::String, level::Logging.LogLevel)
+    if session.useLokiLogger == false
+        return
+    end
+    
     with_logger(logger) do
         if level == Logging.Info
             @info data

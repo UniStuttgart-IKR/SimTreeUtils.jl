@@ -16,7 +16,28 @@ end
 #
 #    return stDataBase(dbFile, con, "")
 #end
+function OpenDuckDB(session::SimTreeUtils.SimTreeSession, dbfile::String, drop::Bool)
+    if session.useDuckDB == false
+        return
+    end
+
+    SimTreeUtils.logInit(session, "[DuckDB] Creating Database '$(dbfile)' Drop: $(drop)")
+    session.duckDBfile = dbfile
+
+    if drop==true && isfile(session.duckDBfile)
+        rm(session.duckDBfile)
+    end
+
+    session.duckDBcon = DBInterface.connect(DuckDB.DB, session.duckDBfile) #Open File & Create if not exist
+    #CreateBaseTable(OpenDatabase(SIMTREE_RESULTS_PATH, "database"), PARAMSDICT, SEED, datapath)
+    
+    SimTreeUtils.logInit(session, "[DuckDB] Connection established; '$(dbfile)' Drop: $(drop)")
+end
 function CloseDuckDB(session::SimTreeUtils.SimTreeSession)
+    if session.useDuckDB == false
+        return
+    end
+
     if session.duckDBfile == ":memory:"
         @error "Not implemented!"
         return
@@ -29,11 +50,29 @@ function CloseDuckDB(session::SimTreeUtils.SimTreeSession)
         #    DBInterface.execute(session.duckDBcon, "DETACH $(session.app)")
         #end
     end
+    
+    SimTreeUtils.logInit(session, "[DuckDB] Closing Connection '$(session.sqliteFile)'")
+    
     DBInterface.close(session.duckDBcon)
     session.duckDBcon = nothing
+
+    SimTreeUtils.logInit(session, "[DuckDB] Closed '$(session.sqliteFile)'")
+end
+
+function AppendDuckDBData(session::SimTreeUtils.SimTreeSession, tableName::String, columnsDict::OrderedDict{String, Type}, dataDict::OrderedDict{String, Any})
+    if session.useDuckDB == false
+        return
+    end
+    
+    table = SimTreeUtils.CreateDuckDBTable(session, tableName, columnsDict)
+    SimTreeUtils.AddDuckDBTableRow(table, dataDict)
+    SimTreeUtils.ViewDuckDBScheme(session)
 end
 
 function CreateDuckDBBaseTable(session::SimTreeUtils.SimTreeSession)
+    if session.useDuckDB == false
+        return
+    end
 
     CreateDuckDBTable(session, "base", 
         OrderedDictDict{String, Type}("SEED" => Int,
@@ -53,7 +92,10 @@ const julia_to_sql = Dict(
 
 function CreateDuckDBTable(session::SimTreeUtils.SimTreeSession,
     tableName::String,
-    columns::OrderedDict{String, Type})::stDataTable
+    columns::OrderedDict{String, Type})::Union{stDataTable, Nothing}
+    if session.useDuckDB == false
+        return nothing
+    end
 
     createColumns = join(["$k $(get(julia_to_sql, v, "TEXT"))" for (k, v) in columns], ", ")
 
