@@ -28,17 +28,21 @@ function CloseDuckDB(session::SimTreeUtils.SimTreeSession)
         return
     end
 
+    if session.duckDBcon === nothing
+        return
+    end
+
     if session.duckDBfile == ":memory:"
         @error "Not implemented!"
         return
     end
     
-    SimTreeUtils.logInit(session, "[DuckDB] Closing Connection '$(session.sqliteFile)'")
+    SimTreeUtils.logInit(session, "[DuckDB] Closing Connection '$(session.duckDBfile)'")
     
     DBInterface.close(session.duckDBcon)
     session.duckDBcon = nothing
 
-    SimTreeUtils.logInit(session, "[DuckDB] Closed '$(session.sqliteFile)'")
+    SimTreeUtils.logInit(session, "[DuckDB] Closed '$(session.duckDBfile)'")
 end
 #############################
 #   Execute Querys
@@ -77,12 +81,12 @@ end
 #############################
 function CreateDuckDBTable(session::SimTreeUtils.SimTreeSession, tableName::String, columns::OrderedDict{String, Type})
     if session.useDuckDB == false
-        return nothing
+        return
     end
 
     createColumns = join(["$k $(GetDuckDBType(v))" for (k, v) in columns], ", ")
 
-    _executeDuckDBQuery(session, "CREATE TABLE IF NOT EXISTS $tableName ($createColumns)")
+    _executeDuckDBQuery(session, "CREATE TABLE IF NOT EXISTS $tableName (TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP, $createColumns)")
 
     for (k, v) in columns
         AddDuckDBTableColumn(session, tableName, k, v)
@@ -153,16 +157,4 @@ function ViewDuckDBScheme(session::SimTreeUtils.SimTreeSession)
             println(SelectDuckDBData(session, tableName))
         end
     end
-end
-#############################
-#   Basic Plotting
-#############################
-#Temporary easy plotting function
-function plotXY(session::SimTreeUtils.SimTreeSession, tableName::String, colX::String, colY::Matrix{String}; limit::Integer=8)
-    #database = OpenDatabase(datapath::String, dbname::String)
-    x = SelectDuckDBData(session, tableName; limit, Columns=colX)
-    y = SelectDuckDBData(session, tableName; limit, Columns=join(colY, ", "))
-    CloseDuckDB(session)
-    
-    Plots.plot(Matrix(x), Matrix(y), title="$(session.app)/$tableName", labels=colY, xlabel="$colX")
 end

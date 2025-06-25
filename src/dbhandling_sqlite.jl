@@ -20,11 +20,16 @@ function OpenSQLiteDB(session::SimTreeUtils.SimTreeSession, dbfile::String, drop
     end
     
     session.sqliteCon = SQLite.DB(session.sqliteFile)
+    SimTreeUtils._executeSQLiteQuery(session, "PRAGMA journal_mode_wal;")
     
     SimTreeUtils.logInit(session, "[SQLite] Connection established; '$(session.sqliteFile))' Drop: $drop")
 end
 function CloseSQLiteDB(session::SimTreeUtils.SimTreeSession)
     if session.useSQLite == false
+        return
+    end
+
+    if session.sqliteCon === nothing
         return
     end
 
@@ -48,24 +53,62 @@ function _executeSQLiteQuery(session::SimTreeUtils.SimTreeSession, query::String
         return
     end
     
-    DBInterface.execute(session.sqliteCon, query)
+    for attempt in 1:5
+        try
+            DBInterface.execute(session.sqliteCon, query)
+            break
+        catch e
+            if isa(e, SQLite.SQLiteException)
+                SimTreeUtils.logProd(session, "[SQLite] DB locked"; level=Logging.Error)
+                sleep(0.5)
+            else
+                rethrow(e)
+            end
+        end
+    end
 end
 function _executeSQLiteSelect(session::SimTreeUtils.SimTreeSession, query::String)::DataFrames.DataFrame
     if session.useSQLite == false
         return
     end
     
-    return DBInterface.execute(session.sqliteCon, query) |> DataFrames.DataFrame
+    for attempt in 1:5
+        try
+            return DBInterface.execute(session.sqliteCon, query) |> DataFrames.DataFrame
+        catch e
+            if isa(e, SQLite.SQLiteException)
+                SimTreeUtils.logProd(session, "[SQLite] DB locked"; level=Logging.Error)
+                sleep(0.5)
+            else
+                rethrow(e)
+            end
+        end
+    end
+    return nothing
 end
 #############################
 #   Create & Alter Tables
 #############################
 function CreateSQLiteTable(session::SimTreeUtils.SimTreeSession, tableName::String, columns::OrderedDict{String, Type})
-    columnsVec = [k for (k,v) in columns]
-    columnsTypeVec = [v for (k,v) in columns]
+    if session.useSQLite == false
+        return
+    end
 
-    schema = Tables.Schema(columnsVec, columnsTypeVec)
-    SQLite.createtable!(session.sqliteCon, tableName, schema; temp=false, ifnotexists=true)
+    createColumns = join(["$k $v" for (k, v) in columns], ", ")
+
+    _executeSQLiteQuery(session, "CREATE TABLE IF NOT EXISTS $tableName (TIMESTAMP DATETIME DEFAULT(datetime('subsec')), $createColumns)")
+
+    existing = SQLite.columns(session.sqliteCon, tableName)
+    for (k, v) in columns
+        if k in existing.name
+            continue
+        end
+
+        AddSQLiteTableColumn(session, tableName, k, v)
+    end
+end
+function AddSQLiteTableColumn(session::SimTreeSession, tableName::String, column::String, columntype::Type)
+    _executeSQLiteQuery(session, "ALTER TABLE $tableName ADD COLUMN $column $columntype")
 end
 #############################
 #   Insert Data
