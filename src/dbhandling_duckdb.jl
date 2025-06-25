@@ -1,23 +1,10 @@
-mutable struct stDataTable
-    session::SimTreeUtils.SimTreeSession
-    tableName::String
-    columns::Dict{String, Type}
-end
-
-#function OpenDatabase(session::SimTreeSession, datapath::String, dbname::String)
-#    session.duckDBfile = "$datapath/$dbname.duckdb"
-#    session.duckDBcon = DBInterface.connect(DuckDB.DB, dbFile)
-#
-#    return stDataBase(dbFile, con, "")
-#end
-#function OpenInMemoryDB()::stDataBase
-#    dbFile = ":memory:"
-#    con = DBInterface.connect(DuckDB.DB, dbFile)
-#
-#    return stDataBase(dbFile, con, "")
-#end
 function OpenDuckDB(session::SimTreeUtils.SimTreeSession, dbfile::String, drop::Bool)
     if session.useDuckDB == false
+        return
+    end
+
+    if session.duckDBfile == ":memory:"
+        @error "Not implemented!"
         return
     end
 
@@ -28,8 +15,7 @@ function OpenDuckDB(session::SimTreeUtils.SimTreeSession, dbfile::String, drop::
         rm(session.duckDBfile)
     end
 
-    session.duckDBcon = DBInterface.connect(DuckDB.DB, session.duckDBfile) #Open File & Create if not exist
-    #CreateBaseTable(OpenDatabase(SIMTREE_RESULTS_PATH, "database"), PARAMSDICT, SEED, datapath)
+    session.duckDBcon = DBInterface.connect!(DuckDB.DB, session.duckDBfile)
     
     SimTreeUtils.logInit(session, "[DuckDB] Connection established; '$(dbfile)' Drop: $(drop)")
 end
@@ -41,14 +27,6 @@ function CloseDuckDB(session::SimTreeUtils.SimTreeSession)
     if session.duckDBfile == ":memory:"
         @error "Not implemented!"
         return
-        #if datapath=="" || dbname==""
-        #    @error "InMemory-Data will be Lost!"
-        #else
-        #    session.duckDBfile = "$(session.SIMTREE_RESULTS_PATH))/$(session.app).duckdb"
-        #    DBInterface.execute(session.duckDBcon, "ATTACH '$(session.duckDBfile)'")
-        #    DBInterface.execute(session.duckDBcon, "COPY FROM DATABASE memory TO $(session.app))")
-        #    DBInterface.execute(session.duckDBcon, "DETACH $(session.app)")
-        #end
     end
     
     SimTreeUtils.logInit(session, "[DuckDB] Closing Connection '$(session.sqliteFile)'")
@@ -59,28 +37,33 @@ function CloseDuckDB(session::SimTreeUtils.SimTreeSession)
     SimTreeUtils.logInit(session, "[DuckDB] Closed '$(session.sqliteFile)'")
 end
 
+function _executeDuckDBQuery(session::SimTreeUtils.SimTreeSession, query::String)
+    if session.useDuckDB == false
+        return
+    end
+    
+    DBInterface.execute(session.duckDBcon, query)
+end
+
+function _executeDuckDBSelect(session::SimTreeUtils.SimTreeSession, query::String)::DataFrames.DataFrame
+    if session.useDuckDB == false
+        return
+    end
+    
+    return DBInterface.execute(session.duckDBcon, query) |> DataFrames.DataFrame
+end
+
 function AppendDuckDBData(session::SimTreeUtils.SimTreeSession, tableName::String, columnsDict::OrderedDict{String, Type}, dataDict::OrderedDict{String, Any})
     if session.useDuckDB == false
         return
     end
     
-    table = SimTreeUtils.CreateDuckDBTable(session, tableName, columnsDict)
-    SimTreeUtils.AddDuckDBTableRow(table, dataDict)
-    SimTreeUtils.ViewDuckDBScheme(session)
+    SimTreeUtils.CreateDuckDBTable(session, tableName, columnsDict)
+    SimTreeUtils.AddDuckDBTableRow(session, tableName, dataDict)
+    #SimTreeUtils.ViewDuckDBScheme(session)
 end
 
-function CreateDuckDBBaseTable(session::SimTreeUtils.SimTreeSession)
-    if session.useDuckDB == false
-        return
-    end
-
-    CreateDuckDBTable(session, "base", 
-        OrderedDictDict{String, Type}("SEED" => Int,
-        "datapath" => String,
-        ((k => typeof(v)) for (k, v) in session.PARAMSDICT)...))
-end
-
-const julia_to_sql = Dict(
+const julia_to_duckDB = Dict(
     Int32   => "INTEGER",
     Int64   => "INTEGER",
     Float32 => "REAL",
@@ -89,50 +72,41 @@ const julia_to_sql = Dict(
     Bool    => "BOOLEAN",
     Missing => "NULL"
 )
+function GetDuckDBType(column::Type; default::String="TEXT")::String
+    return get(julia_to_duckDB, column, default)
+end
 
-function CreateDuckDBTable(session::SimTreeUtils.SimTreeSession,
-    tableName::String,
-    columns::OrderedDict{String, Type})::Union{stDataTable, Nothing}
+function CreateDuckDBTable(session::SimTreeUtils.SimTreeSession, tableName::String, columns::OrderedDict{String, Type})
     if session.useDuckDB == false
         return nothing
     end
 
-    createColumns = join(["$k $(get(julia_to_sql, v, "TEXT"))" for (k, v) in columns], ", ")
+    createColumns = join(["$k $(GetDuckDBType(v))" for (k, v) in columns], ", ")
 
-    DBInterface.execute(session.duckDBcon, "CREATE TABLE IF NOT EXISTS $tableName ($createColumns)")
+    _executeDuckDBQuery(session, "CREATE TABLE IF NOT EXISTS $tableName ($createColumns)")
 
-    datatable = stDataTable(session, tableName, columns)
-    #Alter Table & Create new Columns, if TABLE exists
     for (k, v) in columns
-        datatable = AddDuckDBTableColumn(datatable, k, v)
+        AddDuckDBTableColumn(session, tableName, k, v)
     end
-    return datatable
 end
 
-function AddDuckDBTableColumn(table::stDataTable, column::String, columntype::Type)::stDataTable
-    sqltype = get(julia_to_sql, columntype, "TEXT")
-
-    DBInterface.execute(table.session.duckDBcon, "ALTER TABLE $(table.tableName) ADD COLUMN IF NOT EXISTS $column $sqltype")
-    println()
-
-    if !haskey(table.columns, column)
-        table.columns[column] = columntype
-    end
-    return table
+function AddDuckDBTableColumn(session::SimTreeSession, tableName::String, column::String, columntype::Type)
+    _executeDuckDBQuery(session, "ALTER TABLE $tableName ADD COLUMN IF NOT EXISTS $column $(GetDuckDBType(columntype)))")
 end
 
-function AddDuckDBTableRow(table::stDataTable, data::Vector)
+function AddDuckDBTableRow(session::SimTreeSession, tableName::String, data::Vector)
     columns = join([v for (v) in data], ", ")
-    DBInterface.execute(table.session.duckDBcon, "INSERT INTO $(table.tableName) VALUES($columns)")
+    _executeDuckDBQuery(session, "INSERT INTO $(tableName) VALUES($columns)")
 end
-function AddDuckDBTableRow(table::stDataTable, data::Dict{String, Any})
+function AddDuckDBTableRow(session::SimTreeSession, tableName::String, data::Dict{String, Any})
     columns = join(["$v AS $k" for (k, v) in data], ", ")
-    DBInterface.execute(table.session.duckDBcon, "INSERT INTO $(table.tableName) BY NAME (SELECT $columns)")
+    _executeDuckDBQuery(session, "INSERT INTO $(tableName) BY NAME (SELECT $columns)")
 end
-function AddDuckDBTableRow(table::stDataTable, data::OrderedDict{String, Any})
+function AddDuckDBTableRow(session::SimTreeSession, tableName::String, data::OrderedDict{String, Any})
     columns = join(["$v AS $k" for (k, v) in data], ", ")
-    DBInterface.execute(table.session.duckDBcon, "INSERT INTO $(table.tableName) BY NAME (SELECT $columns)")
+    _executeDuckDBQuery(session, "INSERT INTO $(tableName) BY NAME (SELECT $columns)")
 end
+
 
 #Aufruf SelectDuckDBData mit Open/Close-DB
 #function SelectDuckDBData(session::SimTreeUtils.SimTreeSession, table::String; limit::Integer=8, Columns::String="*")::DataFrame
@@ -141,8 +115,8 @@ end
 #    CloseDuckDB(session)
 #    return data
 #end
-function SelectDuckDBData(session::SimTreeUtils.SimTreeSession, table::String; limit::Integer=8, Columns::String="*")::DataFrame
-    return DBInterface.execute(session.duckDBcon, "SELECT $(Columns) FROM $(table) LIMIT $(limit);") |> DataFrames.DataFrame
+function SelectDuckDBData(session::SimTreeUtils.SimTreeSession, tableName::String; limit::Integer=8, Columns::String="*")::DataFrame
+    return _executeDuckDBSelect(session, "SELECT $(Columns) FROM $(tableName) LIMIT $(limit);")
 end
 
 #Aufruf ViewDuckDBScheme mit Open/Close-DB
@@ -152,7 +126,7 @@ end
 #    CloseDuckDB(session)
 #end
 function ViewDuckDBScheme(session::SimTreeUtils.SimTreeSession)
-    tables = DBInterface.execute(session.duckDBcon, "SHOW ALL TABLES") |> DataFrame
+    tables = _executeDuckDBSelect(session, "SHOW ALL TABLES")
     println(tables)
     for tableRow in eachrow(tables)
         table = string(tableRow[:name])
@@ -161,7 +135,7 @@ function ViewDuckDBScheme(session::SimTreeUtils.SimTreeSession)
         else
             println("Show Table '$table")
             
-            schema = DBInterface.execute(session.duckDBcon, "DESCRIBE $(table)") |> DataFrame
+            schema = _executeDuckDBSelect(session, "DESCRIBE $(table)")
             println(schema)
 
             println(SelectDuckDBData(session, table))
@@ -170,11 +144,11 @@ function ViewDuckDBScheme(session::SimTreeUtils.SimTreeSession)
 end
 
 #Temporary easy plotting function
-function plotXY(session::SimTreeUtils.SimTreeSession, table::String, colX::String, colY::Matrix{String}; limit::Integer=8)
+function plotXY(session::SimTreeUtils.SimTreeSession, tableName::String, colX::String, colY::Matrix{String}; limit::Integer=8)
     #database = OpenDatabase(datapath::String, dbname::String)
-    x = SelectDuckDBData(session, table; limit, Columns=colX)
-    y = SelectDuckDBData(session, table; limit, Columns=join(colY, ", "))
+    x = SelectDuckDBData(session, tableName; limit, Columns=colX)
+    y = SelectDuckDBData(session, tableName; limit, Columns=join(colY, ", "))
     CloseDuckDB(session)
     
-    Plots.plot(Matrix(x), Matrix(y), title="$(session.app)/$table", labels=colY, xlabel="$colX")
+    Plots.plot(Matrix(x), Matrix(y), title="$(session.app)/$tableName", labels=colY, xlabel="$colX")
 end

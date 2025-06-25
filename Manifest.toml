@@ -2,7 +2,7 @@
 
 julia_version = "1.11.3"
 manifest_format = "2.0"
-project_hash = "abe3e4947f99e7af04d37fbed2de50dbf11d98d3"
+project_hash = "b101f646d8b64425724c2147dd00173e72547db8"
 
 [[deps.Adapt]]
 deps = ["LinearAlgebra", "Requires"]
@@ -897,6 +897,18 @@ version = "1.3.1"
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 version = "0.7.0"
+
+[[deps.SQLite]]
+deps = ["DBInterface", "Random", "SQLite_jll", "Serialization", "Tables", "WeakRefStrings"]
+git-tree-sha1 = "38b82dbc52b7db40bea182688c7a1103d06948a4"
+uuid = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
+version = "1.6.1"
+
+[[deps.SQLite_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
+git-tree-sha1 = "9a325057cdb9b066f1f96dc77218df60fe3007cb"
+uuid = "76ed43ae-9a5d-5a62-8c75-30186b810ce8"
+version = "3.48.0+0"
 
 [[deps.Scratch]]
 deps = ["Dates"]

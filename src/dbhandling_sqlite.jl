@@ -3,6 +3,11 @@ function OpenSQLiteDB(session::SimTreeUtils.SimTreeSession, dbfile::String, drop
     if session.useSQLite == false
         return
     end
+
+    if session.sqliteFile == ":memory:"
+        @error "Not implemented!"
+        return
+    end
     
     SimTreeUtils.logInit(session, "[SQLite] Creating Database '$(dbfile)' Drop: $(drop)")
     session.sqliteFile = dbfile
@@ -11,14 +16,18 @@ function OpenSQLiteDB(session::SimTreeUtils.SimTreeSession, dbfile::String, drop
         rm(session.sqliteFile)
     end
     
-    session.sqliteCon = SQLite.DB(session.sqliteFile) #Open File & Create if not exist
-    #CreateBaseTable(OpenDatabase(SIMTREE_RESULTS_PATH, "database"), PARAMSDICT, SEED, datapath)
+    session.sqliteCon = SQLite.DB(session.sqliteFile)
     
     SimTreeUtils.logInit(session, "[SQLite] Connection established; '$(dbfile)' Drop: $(drop)")
 end
 
 function CloseSQLiteDB(session::SimTreeUtils.SimTreeSession)
     if session.useSQLite == false
+        return
+    end
+
+    if session.sqliteFile == ":memory:"
+        @error "Not implemented!"
         return
     end
     
@@ -30,17 +39,34 @@ function CloseSQLiteDB(session::SimTreeUtils.SimTreeSession)
     SimTreeUtils.logInit(session, "[SQLite] Closed '$(session.sqliteFile)'")
 end
 
+function _executeSQLiteQuery(session::SimTreeUtils.SimTreeSession, query::String)
+    if session.useSQLite == false
+        return
+    end
+    
+    DBInterface.execute(session.sqliteCon, query)
+end
+
 function AppendSQLiteData(session::SimTreeUtils.SimTreeSession, tableName::String, columnsDict::OrderedDict{String, Type}, dataDict::OrderedDict{String, Any})
     if session.useSQLite == false
         return
     end
     
     SimTreeUtils.CreateSQLiteTable(session, tableName, columnsDict)
-    #SimTreeUtils.AddDuckDBTableRow(table, dataDict)
+    SimTreeUtils.AddSQLiteTableRow(session, tableName, dataDict)
     #SimTreeUtils.ViewDuckDBScheme(session)
 end
 
 function CreateSQLiteTable(session::SimTreeUtils.SimTreeSession, tableName::String, columns::OrderedDict{String, Type})
-    schema = Tables.Schema(["test1", "test2", "test3"], [Int, Float64, String])
+    columnsVec = [k for (k,v) in columns]
+    columnsTypeVec = [v for (k,v) in columns]
+
+    schema = Tables.Schema(columnsVec, columnsTypeVec)
     SQLite.createtable!(session.sqliteCon, tableName, schema; temp=false, ifnotexists=true)
+end
+function AddSQLiteTableRow(session::SimTreeUtils.SimTreeSession, tableName::String, data::OrderedDict{String, Any})
+    columns = join(["$k" for (k, v) in data], ", ")
+    values = join(["$v" for (k, v) in data], ", ")
+
+    _executeSQLiteQuery(session, "INSERT INTO $(tableName) ($columns) VALUES ($values);")
 end

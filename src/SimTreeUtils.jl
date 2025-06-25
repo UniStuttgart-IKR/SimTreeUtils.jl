@@ -9,6 +9,7 @@ using BSON
 using TOML
 
 using DuckDB
+using SQLite
 using DataFrames
 using LokiLogger
 using Logging

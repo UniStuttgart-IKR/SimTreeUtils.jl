@@ -101,10 +101,6 @@ function logData(session::SimTreeUtils.SimTreeSession, column::String, data::Any
 end
 
 function _lokiLog(logger::LokiLogger.Logger, data::String, level::Logging.LogLevel)
-    if session.useLokiLogger == false
-        return
-    end
-    
     with_logger(logger) do
         if level == Logging.Info
             @info data
