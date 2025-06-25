@@ -1,3 +1,6 @@
+#############################
+#   Initialize Logger
+#############################
 function simloginit(
     app::String,
     status::String = "initializing"
@@ -5,7 +8,6 @@ function simloginit(
     
     return _simloginit(endpoint, app, status, Dict{String, String}())
 end
-
 function simloginit(session::SimTreeUtils.SimTreeSession,
     status::String="prod"
     ;endpoint::String="http://netlabdesk5:3100")::LokiLogger.Logger
@@ -14,7 +16,6 @@ function simloginit(session::SimTreeUtils.SimTreeSession,
         Dict{String, String}("SEED" => string(session.SEED), "datapath" => session.datapath,
             ((k => string(v)) for (k, v) in session.PARAMSDICT)...))
 end
-
 function _simloginit(
     endpoint::String,
     app::String,
@@ -26,8 +27,9 @@ function _simloginit(
         labels=Dict{String, String}("host" => gethostname(), "user" => Sys.username(), "lokiLogger" => "LokiLogger.jl", "app" => app, "status" => status,
             ((k => v) for (k, v) in labelsDict)...))
 end
-
-#Logging der Init-Ereignisse
+#############################
+#   Initial Logger (Sim-Startup)
+#############################
 function logInit(session::SimTreeUtils.SimTreeSession, data::String; level::Logging.LogLevel=Logging.Info)
     if session.useLokiLogger == false
         return
@@ -51,7 +53,9 @@ function logInit(session::SimTreeUtils.SimTreeSession, data::OrderedDict{String,
     json = JSON3.write(data)
     _lokiLog(session.lokiInit, string(json), level)
 end
-#Logging der Produktiv-Ereignisse
+#############################
+#   Production Logger
+#############################
 function logProd(session::SimTreeUtils.SimTreeSession, data::String; level::Logging.LogLevel=Logging.Info)
     if session.useLokiLogger == false
         return
@@ -75,7 +79,9 @@ function logProd(session::SimTreeUtils.SimTreeSession, data::OrderedDict{String,
     json = JSON3.write(data)
     _lokiLog(session.lokiProd, string(json), level)
 end
-#Logging von Rohdaten als JSON
+#############################
+#   Log Data
+#############################
 function logData(session::SimTreeUtils.SimTreeSession, data::Dict{String, Any}; level::Logging.LogLevel=Logging.Info)
     if session.useLokiLogger == false
         return
@@ -99,7 +105,9 @@ function logData(session::SimTreeUtils.SimTreeSession, column::String, data::Any
     
     logData(session, Dict{String, Any}(column => data); level)
 end
-
+#############################
+#   Fundamental Logger
+#############################
 function _lokiLog(logger::LokiLogger.Logger, data::String, level::Logging.LogLevel)
     with_logger(logger) do
         if level == Logging.Info

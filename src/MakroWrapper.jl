@@ -1,3 +1,9 @@
+#############################
+#   Log Values via Loki
+#   Usage:
+#   @SimTreeUtils.logValues(a, b, c)
+#   @SimTreeUtils.logValues a b c
+#############################
 #Macro Binding to extract variablename from input-variable
 #https://discourse.julialang.org/t/retrieve-variable-name-inside-function/83753/2
 macro logValues(vars...)
@@ -6,13 +12,18 @@ macro logValues(vars...)
         session = SimTreeUtils.GetSession(nothing)
         dict = OrderedDict{String, Any}($(pairs...))
 
-        if session.useLokiLogger == false
-            return
+        if session.useLokiLogger == true
+            SimTreeUtils.logData(session, dict; level=Logging.Info)
         end
-
-        SimTreeUtils.logData(session, dict; level=Logging.Info)
     end
 end
+#############################
+#   Store data to DBs
+#   Usage:
+#       @SimTreeUtils.saveDB(a, b, c)
+#       @SimTreeUtils.saveDB a b c
+#   First Variable-Name will be used as TableName
+#############################
 macro saveDB(vars...)
     _tableName = string(vars[1])
     pairs = [:( $(string(v)) => $(esc(v)) ) for v in vars]

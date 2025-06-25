@@ -1,3 +1,6 @@
+#############################
+#   Session Struct
+#############################
 mutable struct SimTreeSession
     app::String
     SIMTREE_RESULTS_PATH::Union{String, Nothing}
@@ -18,7 +21,9 @@ mutable struct SimTreeSession
     sqliteFile::Union{String, Nothing}
     sqliteCon::Union{SQLite.DB, Nothing}
 end
-
+#############################
+#   Initialize Session
+#############################
 function InitializeSession(app::String; useLokiLogger::Bool=true, useDuckDB::Bool=true, useSQLite::Bool=true)::SimTreeUtils.SimTreeSession
     session = SimTreeUtils.SimTreeSession(app, nothing, nothing, nothing, nothing,  #Simulation Parameters
         useLokiLogger, nothing, nothing, nothing,                           #Loki Logger Init
@@ -38,7 +43,9 @@ function TestSession(;app::String="TestSession", useLokiLogger::Bool=true, useDu
     PrepareSession(session, "$(pwd())", Dict{String, Any}("param1"=>1, "param2"=>0.01, "param3"=>"test"), 1, "$(pwd())"; drop=true)
     return SaveSession(session)
 end
-
+#############################
+#   Extend Session (Prod-Use)
+#############################
 function PrepareSession(session::SimTreeUtils.SimTreeSession, SIMTREE_RESULTS_PATH::String, PARAMSDICT::Dict{String, Any}, SEED::Int, datapath::String; drop::Bool=false)
     session.SIMTREE_RESULTS_PATH = SIMTREE_RESULTS_PATH
     session.PARAMSDICT = PARAMSDICT
@@ -63,7 +70,9 @@ function PrepareSession(session::SimTreeUtils.SimTreeSession, SIMTREE_RESULTS_PA
 
     SaveSession(session)
 end
-
+#############################
+#   Close Session
+#############################
 function CloseSession(session::SimTreeUtils.SimTreeSession)
     if session.useDuckDB
         CloseDuckDB(session)
@@ -75,12 +84,13 @@ function CloseSession(session::SimTreeUtils.SimTreeSession)
 
     SaveSession(session)
 end
-
+#############################
+#   Store/Get Session
+#############################
 function SaveSession(session::SimTreeUtils.SimTreeSession)::SimTreeUtils.SimTreeSession
     Base.task_local_storage("session", session)
     return session
 end
-
 function GetSession()::SimTreeUtils.SimTreeSession
     session = Base.task_local_storage("session")
     session === nothing && @error "No active Session found!"
@@ -92,4 +102,3 @@ function GetSession(session::Union{SimTreeUtils.SimTreeSession, Nothing})::SimTr
     end
     return session
 end
-

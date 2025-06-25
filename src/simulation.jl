@@ -59,7 +59,7 @@ function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String
         @info "SIMTREE_RESULTS_PATH: " * SIMTREE_RESULTS_PATH
 
         starguments=TOML.parsefile("$SIMTREE_RESULTS_PATH/simtree_arguments.toml")
-        if starguments == nothing
+        if starguments === nothing
             @warn "starguments empty"
         else
             @info "starguments: " * string(starguments)
