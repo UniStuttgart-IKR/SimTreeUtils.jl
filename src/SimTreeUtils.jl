@@ -21,21 +21,22 @@ using Plots
 
 export copyresults, findrelpaths, getparameters, simsnum, getsims, getsimspath, SimTreeSession, logValues, saveDuckDB
 
-export TestSession, testSaveBSON, CloseSession
+export TestSession, TestSaveBSON, CloseSession
 
-include("dynamiclogger.jl")     #Extends TeeLogger
-include("simTreeSession.jl")    #Holds Session Variables
-include("simpleLogging.jl")     #Simple Logging functions
+include("dynamiclogger.jl")         #Extends TeeLogger
+include("simTreeSession.jl")        #Holds Session Variables
+include("simpleLogging.jl")         #Simple Logging functions
 
 include("simulation.jl")
 include("loaddata.jl")
 include("metaanalysis.jl")
 
-include("dbhandling_duckdb.jl")
-include("dbhandling_sqlite.jl")
-include("loghandling_loki.jl")
-include("MakroWrapper.jl")
-include("basicplot.jl")
-include("saveresults.jl")
+include("dbhandling_duckdb.jl")     #Storage-Handling DuckDB
+include("dbhandling_sqlite.jl")     #Storage-Handling SQLite
+include("loghandling_loki.jl")      #Logging Functionality Loki
+include("MakroWrapper.jl")          #Macros for easy use
+
+include("basicplot.jl")             #Test Retrieve Data from DB and Plot XY
+include("saveresults.jl")           #Test Save results
 
 end
