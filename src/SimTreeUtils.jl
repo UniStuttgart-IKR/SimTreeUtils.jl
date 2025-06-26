@@ -21,6 +21,8 @@ using Plots
 
 export copyresults, findrelpaths, getparameters, simsnum, getsims, getsimspath, SimTreeSession, logValues, saveDuckDB
 
+export TestSession, testSaveBSON, CloseSession
+
 include("dynamiclogger.jl")     #Extends TeeLogger
 include("simTreeSession.jl")    #Holds Session Variables
 include("simpleLogging.jl")     #Simple Logging functions
