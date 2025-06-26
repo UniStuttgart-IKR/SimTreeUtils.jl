@@ -8,9 +8,10 @@ mutable struct SimTreeSession
     SEED::Union{Int, Nothing}
     datapath::Union{String, Nothing}
 
+    logger::DynamicLogger
+    tempLogger::AbstractLogger
+
     useLokiLogger::Bool
-    lokiInit::Union{LokiLogger.Logger, Nothing}
-    lokiProd::Union{LokiLogger.Logger, Nothing}
     lokiData::Union{LokiLogger.Logger, Nothing}
     
     useDuckDB::Bool
@@ -26,13 +27,15 @@ end
 #############################
 function InitializeSession(app::String; useLokiLogger::Bool=true, useDuckDB::Bool=true, useSQLite::Bool=true)::SimTreeUtils.SimTreeSession
     session = SimTreeUtils.SimTreeSession(app, nothing, nothing, nothing, nothing,  #Simulation Parameters
-        useLokiLogger, nothing, nothing, nothing,                           #Loki Logger Init
+        DynamicLogger(ConsoleLogger()), nothing,                                    #DynamicLogger
+        useLokiLogger, nothing,                                                     #Loki Logger Init
         useDuckDB, nothing, nothing,                                                #DuckDB Init
         useSQLite, nothing, nothing)                                                #SQLite Init
 
     #Initialize Loki-Logger (Init)
     if session.useLokiLogger
-        session.lokiInit = simloginit(app)
+        tempLogger = simloginit(app)
+        add_logger!(session.logger, tempLogger)
     end
 
     return SaveSession(session)
@@ -54,7 +57,7 @@ function PrepareSession(session::SimTreeUtils.SimTreeSession, SIMTREE_RESULTS_PA
 
     #Initialize Loki-Logger (Prod & Data)
     if session.useLokiLogger
-        session.lokiProd = simloginit(session, "prod")
+        replace_logger!(session.logger, tempLogger, simloginit(session, "prod"))
         session.lokiData = simloginit(session, "data")
     end
 

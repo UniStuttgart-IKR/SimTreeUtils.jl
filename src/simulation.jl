@@ -47,7 +47,7 @@ function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String
     session = SimTreeUtils.InitializeSession(app)
 
     #Initialize Environment
-    Logging.with_logger(session.lokiInit) do
+    Logging.with_logger(session.logger) do
         @debug "Init-Logger initialized!"
 
         if haskey(ENV, "SIMTREE_RESULTS_PATH")
@@ -88,15 +88,11 @@ function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String
         PARAMSDICT["stresultspath"]=SIMTREE_RESULTS_PATH
         @show PARAMSDICT
         @debug "Init-Logger closed"
-    end
+        
+        #Prepare Session for Production
+        SimTreeUtils.PrepareSession(session, SIMTREE_RESULTS_PATH, PARAMSDICT, SEED, datapath)
 
-    #Prepare Session for Production
-    SimTreeUtils.PrepareSession(session, SIMTREE_RESULTS_PATH, PARAMSDICT, SEED, datapath)
-
-    #Call Prod-Environment
-    Logging.with_logger(session.lokiProd) do
         @debug "Prod-Logger initialized!"
-
         results = simulatefunction(session, PARAMSDICT, SEED, datapath)
         SimTreeUtils.ViewDBSchema(session)
 
