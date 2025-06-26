@@ -34,5 +34,6 @@ include("dbhandling_sqlite.jl")
 include("loghandling_loki.jl")
 include("MakroWrapper.jl")
 include("basicplot.jl")
+include("saveresults.jl")
 
 end
