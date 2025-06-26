@@ -12,74 +12,51 @@ To include the current logger do:
 to include the global logger, do:
 `DynamicLogger(global_logger(), loggers...)`
 """
-function DynamicLogger(loggers::Vararg{AbstractLogger})
-    return DynamicLogger(loggers)
+function DynamicLogger(loggers::AbstractLogger...)
+    return DynamicLogger(collect(loggers))
 end
-
-function handle_message(demux::DynamicLogger, args...; kwargs...)
+# For checking if child logger will take the message you are sending
+function comp_handle_message_check(logger, args...; kwargs...)
+    level, message, _module, group, id, file, line = args
+    return comp_shouldlog(logger, level, _module, group, id)
+end
+function Logging.handle_message(demux::DynamicLogger, args...; kwargs...)
     for logger in demux.loggers
         if comp_handle_message_check(logger, args...; kwargs...)
-            handle_message(logger, args...; kwargs...)
+            Logging.handle_message(logger, args...; kwargs...)
         end
     end
 end
-
-function shouldlog(demux::DynamicLogger, args...)
+# For checking child logger, need to check both `min_enabled_level` and `shouldlog`
+function comp_shouldlog(logger, level, _module, group, id)
+    level = convert(LogLevel, level)
+    (Logging.min_enabled_level(logger) <= level && Logging.shouldlog(logger, level, _module, group, id)) ||
+        Base.CoreLogging.env_override_minlevel(group, _module)
+        # `env_override_minlevel` is the internal function that makes JULIA_DEBUG environment variable work
+end
+function Logging.shouldlog(demux::DynamicLogger, args...)
     any(comp_shouldlog(logger, args...) for logger in demux.loggers)
 end
 
-function min_enabled_level(demux::DynamicLogger)
-    minimum(min_enabled_level(logger) for logger in demux.loggers)
+function Logging.min_enabled_level(demux::DynamicLogger)
+    minimum(Logging.min_enabled_level(logger) for logger in demux.loggers)
 end
 
-function catch_exceptions(demux::DynamicLogger)
-    any(catch_exceptions(logger) for logger in demux.loggers)
+function Logging.catch_exceptions(demux::DynamicLogger)
+    any(Logging.catch_exceptions(logger) for logger in demux.loggers)
 end
 #############################
 #   Dynamic Functions (extends TeeLogger)
 #############################
-function add_logger!(wrapper::DynamicLogger, logger::AbstractLogger)
-    if !(logger in wrapper.loggers)
-        push!(wrapper.loggers, logger)
+function add_logger!(demux::DynamicLogger, logger::AbstractLogger)
+    if !(logger in demux.loggers)
+        push!(demux.loggers, logger)
     end
 end
-function remove_logger!(wrapper::DynamicLogger, logger::AbstractLogger)
-    filter!(x => x != logger, wrapper.loggers)
+function remove_logger!(demux::DynamicLogger, logger::AbstractLogger)
+    filter!(x -> x != logger, demux.loggers)
 end
-function replace_logger(wrapper::DynamicLogger, oldlogger::AbstractLogger, newlogger::AbstractLogger)
-    remove_logger!(wrapper, oldlogger)
-    add_logger!(wrapper, newlogger)
-end
-#############################
-#   Generic/Simple Logging
-#############################
-function simpleLog(session::SimTreeUtils.SimTreeSession, data::String; level::Logging.LogLevel=Logging.Info)
-    _simpleLog(session.logger, data, level)
-end
-function simpleLog(session::SimTreeUtils.SimTreeSession, data::Dict{String, Any}; level::Logging.LogLevel=Logging.Info)
-    json = JSON3.write(data)
-    _simpleLog(session.logger, string(json), level)
-end
-function simpleLog(session::SimTreeUtils.SimTreeSession, data::OrderedDict{String, Any}; level::Logging.LogLevel=Logging.Info)
-    json = JSON3.write(data)
-    _simpleLog(session.logger, string(json), level)
-end
-#############################
-#   Fundamental Logger
-#############################
-function _simpleLog(logger::AbstractLogger, data::String, level::Logging.LogLevel)
-    with_logger(logger) do
-        if level == Logging.Info
-            @info data
-        elseif level == Logging.Debug
-            @debug data
-        elseif level == Logging.Warn
-            @warn data
-        elseif level == Logging.Error
-            @error data
-            
-        else
-            @error string("INVALID LOGLEVEL: ", level, " | ", data)
-        end
-    end
+function replace_logger!(demux::DynamicLogger, oldlogger::AbstractLogger, newlogger::AbstractLogger)
+    remove_logger!(demux, oldlogger)
+    add_logger!(demux, newlogger)
 end

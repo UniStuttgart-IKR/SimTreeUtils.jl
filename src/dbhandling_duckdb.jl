@@ -12,16 +12,16 @@ function OpenDuckDB(session::SimTreeUtils.SimTreeSession, dbfile::String, drop::
         return
     end
 
-    SimTreeUtils.logInit(session, "[DuckDB] Creating Database '$(session.duckDBfile))' Drop: $drop")
+    SimTreeUtils.simpleLog(session, "[DuckDB] Creating Database '$(session.duckDBfile))' Drop: $drop"; level=Logging.Debug)
 
     if drop==true && isfile(session.duckDBfile)
-        SimTreeUtils.logInit(session, "[DuckDB] Drop Previos Database '$(session.duckDBfile))'")
+        SimTreeUtils.simpleLog(session, "[DuckDB] Drop Previos Database '$(session.duckDBfile))'"; level=Logging.Debug)
         rm(session.duckDBfile)
     end
 
     session.duckDBcon = DBInterface.connect(DuckDB.DB, session.duckDBfile)
     
-    SimTreeUtils.logInit(session, "[DuckDB] Connection established; '$(session.duckDBfile))' Drop: $drop")
+    SimTreeUtils.simpleLog(session, "[DuckDB] Connection established; '$(session.duckDBfile))' Drop: $drop"; level=Logging.Debug)
 end
 function CloseDuckDB(session::SimTreeUtils.SimTreeSession)
     if session.useDuckDB == false
@@ -37,12 +37,12 @@ function CloseDuckDB(session::SimTreeUtils.SimTreeSession)
         return
     end
     
-    SimTreeUtils.logInit(session, "[DuckDB] Closing Connection '$(session.duckDBfile)'")
+    SimTreeUtils.simpleLog(session, "[DuckDB] Closing Connection '$(session.duckDBfile)'"; level=Logging.Debug)
     
     DBInterface.close(session.duckDBcon)
     session.duckDBcon = nothing
 
-    SimTreeUtils.logInit(session, "[DuckDB] Closed '$(session.duckDBfile)'")
+    SimTreeUtils.simpleLog(session, "[DuckDB] Closed '$(session.duckDBfile)'"; level=Logging.Debug)
 end
 #############################
 #   Execute Querys

@@ -12,17 +12,17 @@ function OpenSQLiteDB(session::SimTreeUtils.SimTreeSession, dbfile::String, drop
         return
     end
     
-    SimTreeUtils.logInit(session, "[SQLite] Creating Database '$(session.sqliteFile))' Drop: $drop")
+    SimTreeUtils.simpleLog(session, "[SQLite] Creating Database '$(session.sqliteFile))' Drop: $drop"; level=Logging.Debug)
 
     if drop==true && isfile(session.sqliteFile)
-        SimTreeUtils.logInit(session, "[SQLite] Drop Previos Database '$(session.sqliteFile))'")
+        SimTreeUtils.simpleLog(session, "[SQLite] Drop Previos Database '$(session.sqliteFile))'"; level=Logging.Debug)
         rm(session.sqliteFile)
     end
     
     session.sqliteCon = SQLite.DB(session.sqliteFile)
     SimTreeUtils._executeSQLiteQuery(session, "PRAGMA journal_mode_wal;")
     
-    SimTreeUtils.logInit(session, "[SQLite] Connection established; '$(session.sqliteFile))' Drop: $drop")
+    SimTreeUtils.simpleLog(session, "[SQLite] Connection established; '$(session.sqliteFile))' Drop: $drop"; level=Logging.Debug)
 end
 function CloseSQLiteDB(session::SimTreeUtils.SimTreeSession)
     if session.useSQLite == false
@@ -38,12 +38,12 @@ function CloseSQLiteDB(session::SimTreeUtils.SimTreeSession)
         return
     end
     
-    SimTreeUtils.logInit(session, "[SQLite] Closing Connection '$(session.sqliteFile)'")
+    SimTreeUtils.simpleLog(session, "[SQLite] Closing Connection '$(session.sqliteFile)'"; level=Logging.Debug)
     
     DBInterface.close(session.sqliteCon)
     session.sqliteCon = nothing
 
-    SimTreeUtils.logInit(session, "[SQLite] Closed '$(session.sqliteFile)'")
+    SimTreeUtils.simpleLog(session, "[SQLite] Closed '$(session.sqliteFile)'"; level=Logging.Debug)
 end
 #############################
 #   Execute Querys

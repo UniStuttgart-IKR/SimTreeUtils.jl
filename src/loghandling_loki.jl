@@ -47,9 +47,5 @@ function logData(session::SimTreeUtils.SimTreeSession, data::OrderedDict{String,
     _simpleLog(session.lokiData, string(json), level)
 end
 function logData(session::SimTreeUtils.SimTreeSession, column::String, data::Any; level::Logging.LogLevel=Logging.Info)
-    if session.useLokiLogger == false
-        return
-    end
-    
-    _simpleLog(session.lokiData, Dict{String, Any}(column => data); level)
+    logData(session, Dict{String, Any}(column => data); level)
 end

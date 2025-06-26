@@ -9,7 +9,7 @@ mutable struct SimTreeSession
     datapath::Union{String, Nothing}
 
     logger::DynamicLogger
-    tempLogger::AbstractLogger
+    tempLogger::Union{LokiLogger.Logger, Nothing}
 
     useLokiLogger::Bool
     lokiData::Union{LokiLogger.Logger, Nothing}
@@ -27,15 +27,16 @@ end
 #############################
 function InitializeSession(app::String; useLokiLogger::Bool=true, useDuckDB::Bool=true, useSQLite::Bool=true)::SimTreeUtils.SimTreeSession
     session = SimTreeUtils.SimTreeSession(app, nothing, nothing, nothing, nothing,  #Simulation Parameters
-        DynamicLogger(ConsoleLogger()), nothing,                                    #DynamicLogger
+        DynamicLogger(global_logger()), nothing,                                    #DynamicLogger
         useLokiLogger, nothing,                                                     #Loki Logger Init
         useDuckDB, nothing, nothing,                                                #DuckDB Init
         useSQLite, nothing, nothing)                                                #SQLite Init
 
     #Initialize Loki-Logger (Init)
     if session.useLokiLogger
-        tempLogger = simloginit(app)
-        add_logger!(session.logger, tempLogger)
+        session.tempLogger = simloginit(app)
+        add_logger!(session.logger, session.tempLogger)
+        SimTreeUtils.simpleLog(session, "[Loki] Init-Logger ready"; level=Logging.Debug)
     end
 
     return SaveSession(session)
@@ -57,8 +58,14 @@ function PrepareSession(session::SimTreeUtils.SimTreeSession, SIMTREE_RESULTS_PA
 
     #Initialize Loki-Logger (Prod & Data)
     if session.useLokiLogger
-        replace_logger!(session.logger, tempLogger, simloginit(session, "prod"))
+        #Replace Init-Logger with Prod-Logger
+        SimTreeUtils.simpleLog(session, "[Loki] Init-Logger dropped"; level=Logging.Debug)
+        replace_logger!(session.logger, session.tempLogger, simloginit(session, "prod"))
+        session.tempLogger = nothing
+
+        SimTreeUtils.simpleLog(session, "[Loki] Prod-Logger ready"; level=Logging.Debug)
         session.lokiData = simloginit(session, "data")
+        SimTreeUtils.simpleLog(session, "[Loki] Data-Logger ready"; level=Logging.Debug)
     end
 
     #Initialize DuckDB Connection+DB (One DB per Parameter-Set)
