@@ -41,10 +41,10 @@ function InitializeSession(app::String; useLokiLogger::Bool=true, useDuckDB::Boo
 
     return SaveSession(session)
 end
-function TestSession(;app::String="TestSession", useLokiLogger::Bool=true, useDuckDB::Bool=true, useSQLite::Bool=true)::SimTreeUtils.SimTreeSession
+function TestSession(resultspath;app::String="TestSession", useLokiLogger::Bool=true, useDuckDB::Bool=true, useSQLite::Bool=true)::SimTreeUtils.SimTreeSession
     session = InitializeSession(app; useLokiLogger=useLokiLogger, useDuckDB=useDuckDB, useSQLite=useSQLite)
-
-    PrepareSession(session, "$(pwd())", Dict{String, Any}("param1"=>1, "param2"=>0.01, "param3"=>"test"), 1, "$(pwd())"; drop=true)
+    datapath = "$(pwd())"
+    PrepareSession(session, resultspath, Dict{String, Any}("param1"=>1, "param2"=>0.01, "param3"=>"test"), 1, datapath; drop=true)
     return SaveSession(session)
 end
 #############################
