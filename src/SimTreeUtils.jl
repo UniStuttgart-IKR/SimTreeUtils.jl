@@ -21,6 +21,10 @@ using Plots
 
 export copyresults, findrelpaths, getparameters, simsnum, getsims, getsimspath, SimTreeSession, TestSession, CloseSession, SaveBSON
 
+
+const max_array_iteration = 5
+const primitive_types = Set([Int, Float64, Bool, Char, UInt8, Int32, Float32])
+
 include("dynamiclogger.jl")         #Extends TeeLogger
 include("simTreeSession.jl")        #Holds Session Variables
 include("simpleLogging.jl")         #Simple Logging functions
