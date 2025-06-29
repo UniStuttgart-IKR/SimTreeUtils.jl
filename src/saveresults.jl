@@ -50,6 +50,8 @@ function normalize(
         previous::Union{String, Nothing} = nothing
     )::Vector{Dict{String, Any}}
 
+    const primitive_types = Set([Int, Float64, Bool, Char, UInt8, Int32, Float32])
+    
     if data isa NamedTuple || data isa Dict
         for (k, v) in pairs(data)
             #normalize(v; prefix = [prefix... , string(k)], out = out, sep = sep, level = level+1)
@@ -72,7 +74,7 @@ function normalize(
                 normalize(v; total = total + 1, level = level, row = new_row, rows = rows, previous = previous)
             end
         end
-    else
+    elseif typeof(data) in primitive_types
         
         new_row = copy(row)
         if previous == nothing
