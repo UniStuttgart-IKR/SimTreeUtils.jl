@@ -21,8 +21,6 @@ using Plots
 
 export copyresults, findrelpaths, getparameters, simsnum, getsims, getsimspath, SimTreeSession, TestSession, CloseSession, SaveBSON
 
-max_array_iteration = 5
-
 include("dynamiclogger.jl")         #Extends TeeLogger
 include("simTreeSession.jl")        #Holds Session Variables
 include("simpleLogging.jl")         #Simple Logging functions

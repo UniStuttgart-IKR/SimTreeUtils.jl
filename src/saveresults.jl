@@ -41,6 +41,8 @@ function formatData(data)::DataFrame
     return DataFrame(named)
 end
 
+const max_array_iteration = 5
+const primitive_types = Set([Int, Float64, Bool, Char, UInt8, Int32, Float32])
 function normalize(
         data::Any;
         total::Int = 1,
@@ -49,8 +51,6 @@ function normalize(
         rows::Vector{Dict{String, Any}} = Dict{String, Any}[],
         previous::Union{String, Nothing} = nothing
     )::Vector{Dict{String, Any}}
-
-    const primitive_types = Set([Int, Float64, Bool, Char, UInt8, Int32, Float32])
     
     if data isa NamedTuple || data isa Dict
         for (k, v) in pairs(data)
