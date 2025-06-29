@@ -11,32 +11,32 @@ end
 ##Aus Lokaler Testumgebung
 
 function formatData(data)::DataFrame
-    log("debug", "01 - Normalize Data")
+    println("01 - Normalize Data")
     #return DataFrame(extractData(data))
     rows = normalize(data)
     #rows = flatten(data)
     
-    log("debug", "02 - Get all Keys")
+    println("02 - Get all Keys")
     all_keys = Set{String}()
     for row in rows
         union!(all_keys, keys(row))
     end
     ordered_keys = sort(collect(all_keys))
 
-    log("debug", "03 - Fill EMpty Cells")
+    println("03 - Fill EMpty Cells")
     filled = [
         Dict(k => get(row, k, missing) for k in ordered_keys)
         for row in rows
     ]
     
-    log("debug", "04 - Sort NAmed KEys")
+    println("04 - Sort NAmed KEys")
     named = [
         NamedTuple{Tuple(Symbol.(ordered_keys))}(
             [row[k] for k in ordered_keys]
         ) for row in filled
     ]
     
-    log("debug", "05 - Export DataFrame")
+    println("05 - Export DataFrame")
     return DataFrame(named)
 end
 
