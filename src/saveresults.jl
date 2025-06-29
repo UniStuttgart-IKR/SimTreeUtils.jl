@@ -3,9 +3,10 @@ function TestSaveBSON(session::SimTreeUtils.SimTreeSession, results)
     return nothing
 end
 
-function SaveBSON(results)
+function SaveBSON(session::SimTreeUtils.SimTreeSession, results)
     println(typeof(results))
-    formatData(results)
+    df = formatData(results)
+    SimTreeUtils.InsertDuckDBDataFrame(session, "test_table", df)
 end
 
 ##Aus Lokaler Testumgebung

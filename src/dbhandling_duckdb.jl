@@ -119,6 +119,24 @@ function AddDuckDBTableRow(session::SimTreeSession, tableName::String, data::Ord
     columns = join(["$v AS $k" for (k, v) in data], ", ")
     _executeDuckDBQuery(session, "INSERT INTO $(tableName) BY NAME (SELECT $columns)")
 end
+function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::DataFrame)
+    println("Test function: Save '$tableName' via DataFrame")
+    println("1 - Generate DF for '$tableName'")
+    
+    #DuckDB.load!(df, table, session.duckDBcon; overwrite=true)
+    
+    # register it as a view in the database
+    println("2 - Create view '$tableName'")
+    DuckDB.register_data_frame(session.duckDBcon, df, "$(tableName)_view")
+    println("3 - Create table '$tableName'")
+    DBInterface.execute(session.duckDBcon, "CREATE TABLE $tableName AS SELECT * FROM $(tableName)_view")
+    println("4 - Drop view '$tableName'")
+    DBInterface.execute(session.duckDBcon, "DROP VIEW IF EXISTS $(tableName)_view")
+    
+    println("9 - GC '$tableName'")
+    df = nothing
+    GC.gc()
+end
 #############################
 #   Select Data
 #############################
