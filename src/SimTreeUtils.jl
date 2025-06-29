@@ -19,9 +19,7 @@ using OrderedCollections
 
 using Plots
 
-export copyresults, findrelpaths, getparameters, simsnum, getsims, getsimspath, SimTreeSession, logValues, saveDuckDB
-
-export TestSession, TestSaveBSON, CloseSession
+export copyresults, findrelpaths, getparameters, simsnum, getsims, getsimspath, SimTreeSession, TestSession, CloseSession, SaveBSON
 
 include("dynamiclogger.jl")         #Extends TeeLogger
 include("simTreeSession.jl")        #Holds Session Variables
