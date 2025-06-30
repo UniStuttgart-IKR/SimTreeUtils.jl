@@ -88,7 +88,7 @@ function normalize(
         #out[key] = data
         #push!(out, row)
     else
-        println(typeof(data) + " " + len(data))
+        println(typeof(data))
     end
 
     return rows
