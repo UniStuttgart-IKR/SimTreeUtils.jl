@@ -71,7 +71,8 @@ const julia_to_duckDB = Dict(
     Float64 => "REAL",
     String  => "TEXT",
     Bool    => "BOOLEAN",
-    Missing => "NULL"
+    Missing => "NULL",
+    Nothing => "NULL"
 )
 function GetDuckDBType(column::Type; default::String="TEXT")::String
     return get(julia_to_duckDB, column, default)

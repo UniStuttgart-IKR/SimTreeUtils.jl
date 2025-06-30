@@ -25,7 +25,7 @@ end
 #############################
 #   Initialize Session
 #############################
-function InitializeSession(app::String; useLokiLogger::Bool=true, useDuckDB::Bool=true, useSQLite::Bool=true)::SimTreeUtils.SimTreeSession
+function InitializeSession(app::String, useLokiLogger::Bool=true, useDuckDB::Bool=true, useSQLite::Bool=true)::SimTreeUtils.SimTreeSession
     session = SimTreeUtils.SimTreeSession(app, nothing, nothing, nothing, nothing,  #Simulation Parameters
         DynamicLogger(global_logger()), nothing,                                    #DynamicLogger
         useLokiLogger, nothing,                                                     #Loki Logger Init
@@ -42,7 +42,8 @@ function InitializeSession(app::String; useLokiLogger::Bool=true, useDuckDB::Boo
     return SaveSession(session)
 end
 function TestSession(resultspath;app::String="TestSession", useLokiLogger::Bool=true, useDuckDB::Bool=true, useSQLite::Bool=true)::SimTreeUtils.SimTreeSession
-    session = InitializeSession(app; useLokiLogger=useLokiLogger, useDuckDB=useDuckDB, useSQLite=useSQLite)
+    session = InitializeSession(app, useLokiLogger, useDuckDB, useSQLite)
+    
     datapath = "$(pwd())"
     PrepareSession(session, resultspath, Dict{String, Any}("param1"=>1, "param2"=>0.01, "param3"=>"test"), 1, datapath; drop=true)
     return SaveSession(session)

@@ -1,8 +1,8 @@
 #############################
 #   Log Values via Loki
 #   Usage:
-#   @SimTreeUtils.logValues(a, b, c)
-#   @SimTreeUtils.logValues a b c
+#   @logValues(a, b, c)
+#   @logValues a b c
 #############################
 #Macro Binding to extract variablename from input-variable
 #https://discourse.julialang.org/t/retrieve-variable-name-inside-function/83753/2
@@ -20,8 +20,8 @@ end
 #############################
 #   Store data to DBs
 #   Usage:
-#       @SimTreeUtils.saveDB(a, b, c)
-#       @SimTreeUtils.saveDB a b c
+#       @saveDB(a, b, c)
+#       @saveDB a b c
 #   First Variable-Name will be used as TableName
 #############################
 macro saveDB(vars...)

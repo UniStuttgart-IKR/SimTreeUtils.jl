@@ -1,8 +1,3 @@
-function TestSaveBSON(session::SimTreeUtils.SimTreeSession, results)
-    println(typeof(results))
-    return nothing
-end
-
 function SaveBSON(session::SimTreeUtils.SimTreeSession, results)
     println(typeof(results))
     df = formatData(results)

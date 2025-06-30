@@ -44,7 +44,7 @@ function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String
     results = nothing
 
     #Initialize Session
-    session = SimTreeUtils.InitializeSession(app)
+    session = SimTreeUtils.InitializeSession(app, useLokiLogger, useDuckDB, useSQLite)
 
     #Initialize Environment
     Logging.with_logger(session.logger) do

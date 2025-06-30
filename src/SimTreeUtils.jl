@@ -19,10 +19,10 @@ using OrderedCollections
 
 using Plots
 
-export copyresults, findrelpaths, getparameters, simsnum, getsims, getsimspath, SimTreeSession, TestSession, CloseSession, SaveBSON
+export copyresults, findrelpaths, getparameters, simsnum, getsims, getsimspath, SimTreeSession, TestSession, CloseSession, SaveBSON, logValues, saveDB
 
 
-const max_array_iteration = 5
+const max_array_iteration = 25
 const primitive_types = Set([Int, Float64, Bool, Char, UInt8, Int32, Float32])
 
 include("dynamiclogger.jl")         #Extends TeeLogger
