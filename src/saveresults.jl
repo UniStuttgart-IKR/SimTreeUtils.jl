@@ -30,7 +30,7 @@ function PrepareTable(session::SimTreeUtils.SimTreeSession, data; prefix="", nam
 end
 function TestPrepareTable(session::SimTreeUtils.SimTreeSession, data)
     df = formatData(data, "testing")
-    SimTreeUtils.InsertDuckDBDataFrame(session, prefix, df; schema="fullresults")
+    SimTreeUtils.InsertDuckDBDataFrame(session, "testing", df; schema="fullresults")
 end
 
 function formatData(data, name::String)::DataFrame
@@ -66,7 +66,7 @@ function normalize(
     
     if data isa NamedTuple || data isa Dict
         for (k, v) in pairs(data)
-            newname = "$(name)[k]"
+            newname = "$(name)[d]"
             
             new_row = copy(row)
             new_row[newname] = string(k)
@@ -74,10 +74,10 @@ function normalize(
         end
     elseif data isa Tuple || data isa AbstractArray
         for (i, v) in enumerate(data)
-            newname = "$(name)[]"
+            newname = "$(name)[i]"
 
             new_row = copy(row)
-            new_row["$(newname)_index"] = i
+            new_row[newname] = i
             normalize(v, newname;  row = new_row, rows = rows)
         end
     elseif typeof(data) in primitive_types
