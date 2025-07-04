@@ -121,7 +121,7 @@ function AddDuckDBTableRow(session::SimTreeSession, tableName::String, data::Ord
     _executeDuckDBQuery(session, "INSERT INTO $(tableName) BY NAME (SELECT $columns)")
 end
 function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::DataFrame)    
-    insertcols!(df, 1, (k => fill(v, nrows(df)) for (k, v) in session.PARAMSDICT)...)
+    insertcols!(df, 1, (k => fill(v, nrow(df)) for (k, v) in session.PARAMSDICT)...)
 
     # register it as a view in the database
     DuckDB.register_data_frame(session.duckDBcon, df, "$(tableName)_view")
