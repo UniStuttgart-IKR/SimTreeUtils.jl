@@ -98,10 +98,17 @@ function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String
 
         SimTreeUtils.CloseSession(session)
 
-        @debug "Save Data"
         # @show results
         if savefile
+            @debug "[BSON-Save] Saving"
             BSON.bson("$SIMTREE_RESULTS_PATH/study.bson", results)
+            @debug "[BSON-Save] Saved"
+
+            if session.useDuckDB
+                @debug "[DuckDB-Save] Saving"
+                SimTreeUtils.SaveBSON(session, results)
+                @debug "[DuckDB-Save] Saved"
+            end
         end
         @debug "Prod-Logger closed"
     end

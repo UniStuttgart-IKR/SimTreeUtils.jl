@@ -30,7 +30,7 @@ function PrepareTable(session::SimTreeUtils.SimTreeSession, data; prefix="", nam
 end
 function TestPrepareTable(session::SimTreeUtils.SimTreeSession, data)
     df = formatData(data, "root")
-    SimTreeUtils.InsertDuckDBDataFrame(session, "testing", df; schema="fullresults")
+    SimTreeUtils.InsertDuckDBDataFrame(session, "full", df; schema="fullresults")
 end
 
 function formatData(data, name::String)::DataFrame
@@ -70,6 +70,11 @@ function normalize(
             
             new_row = copy(row)
             new_row[newname] = string(k)
+
+            if string(k) == "PARAMSDICT"
+                continue
+            end
+
             normalize(v, newname; row = new_row, rows = rows)
         end
     elseif data isa Tuple || data isa AbstractArray
