@@ -10,28 +10,19 @@ end
 ##Aus Lokaler Testumgebung
 
 function test(session::SimTreeUtils.SimTreeSession, data)
-    println(PrepareTable(data))
+    PrepareTable(data)
     #describe(df)
     #SimTreeUtils.InsertDuckDBDataFrame(session, "test_table", df)
 end
 
 function PrepareTable(data; prefix="", name=nothing)
-    if data isa NamedTuple
+    if data isa NamedTuple || data isa Dict
         for (k, v) in pairs(data)
             PrepareTable(v; prefix = isempty(prefix) ? string(k) : "$(prefix)_$(k)", name = k)
         end
-    elseif data isa Dict
-        for (k, v) in pairs(data)
-            PrepareTable(v; prefix = isempty(prefix) ? string(k) : "$(prefix)_$(k)", name = k)
-        end
-    #elseif data isa Tuple || data isa AbstractArray
-    #    for (i, v) in enumerate(data)
-    #        PrepareTable(v; prefix = "$prefix[$i]", name = i)
-    #    end
     else
         println(prefix)
-        df = formatData(data)
-        describe(df)
+        formatData(data)
     end
 end
 
@@ -60,7 +51,9 @@ function formatData(data)::DataFrame
     ]
     
     println("05 - Export DataFrame")
-    return DataFrame(named)
+    df = DataFrame(named)
+    describe(df)
+    return df
 end
 
 function normalize(
