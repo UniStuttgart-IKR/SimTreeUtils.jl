@@ -1,16 +1,20 @@
 function SaveBSON(session::SimTreeUtils.SimTreeSession, results)
     println(typeof(results))
+    #Vorgehen:
+    #   Durchloopen aller initialer Strings
+    #   Daraus Tabellen-Name
+    #       Dann Daten mit formatData
     df = formatData(results)
-    SimTreeUtils.InsertDuckDBDataFrame(session, "test_table", df)
+    println(df)
+    #SimTreeUtils.InsertDuckDBDataFrame(session, "test_table", df)
 end
 
 ##Aus Lokaler Testumgebung
 
 function formatData(data)::DataFrame
     println("01 - Normalize Data")
-    #return DataFrame(extractData(data))
     rows = normalize(data)
-    #rows = flatten(data)
+    println(data)
     
     println("02 - Get all Keys")
     all_keys = Set{String}()

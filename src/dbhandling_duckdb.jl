@@ -133,10 +133,6 @@ function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::D
     DBInterface.execute(session.duckDBcon, "CREATE TABLE $tableName AS SELECT * FROM $(tableName)_view")
     println("4 - Drop view '$tableName'")
     DBInterface.execute(session.duckDBcon, "DROP VIEW IF EXISTS $(tableName)_view")
-    
-    println("9 - GC '$tableName'")
-    df = nothing
-    GC.gc()
 end
 #############################
 #   Select Data
