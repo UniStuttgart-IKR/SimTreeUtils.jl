@@ -26,9 +26,6 @@ function PrepareTable(data; prefix="", name=nothing, rows=[])
         end
     #elseif data isa Tuple || data isa AbstractArray
     #    for (i, v) in enumerate(data)
-    #        if i > max_array_iteration
-    #            continue
-    #        end
     #        PrepareTable(v; prefix = "$prefix[$i]", name = i, rows)
     #    end
     elseif data isa String
@@ -87,9 +84,6 @@ function normalize(
         end
     elseif data isa Tuple || data isa AbstractArray
         for (i, v) in enumerate(data)
-            if i > max_array_iteration
-                continue
-            end
             #normalize(v; prefix = [prefix..., string(i)], out = out, sep = sep, level = level)
             new_row = copy(row)
             if previous == nothing
@@ -140,9 +134,6 @@ function flatten(data; prefix=[], name=nothing, rows=[])
         end
     elseif data isa Tuple || data isa AbstractArray
         for (i, v) in enumerate(data)
-            if i > max_array_iteration
-                continue
-            end
             flatten(v; prefix = "$prefix[$i]", name = i, rows)
         end
     else
@@ -162,9 +153,6 @@ function extractData(data; prefix=[], rows=[])
         end
     elseif data isa Tuple || data isa AbstractArray
         for (i, v) in enumerate(data)
-            if i > max_array_iteration
-                continue
-            end
             extractData(v; prefix = "$prefix[$i]", rows)
         end
     else
