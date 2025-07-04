@@ -5,7 +5,7 @@ function SaveBSON(session::SimTreeUtils.SimTreeSession, results)
     #   Daraus Tabellen-Name
     #       Dann Daten mit formatData
     df = formatData(results)
-    println(df)
+    describe(df)
     #SimTreeUtils.InsertDuckDBDataFrame(session, "test_table", df)
 end
 
@@ -92,7 +92,8 @@ function normalize(
         #out[key] = data
         #push!(out, row)
     else
-        println(typeof(data))
+        #ToDo: Add as BLOB
+        #println(typeof(data))
     end
 
     return rows
