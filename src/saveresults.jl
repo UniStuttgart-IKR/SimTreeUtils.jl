@@ -5,6 +5,7 @@ function SaveBSON(session::SimTreeUtils.SimTreeSession, results)
     #   Daraus Tabellen-Name
     #       Dann Daten mit formatData
     PrepareTable(session, results)
+    TestPrepareTable(session, results)
 end
 
 function PrepareTable(session::SimTreeUtils.SimTreeSession, data; prefix="", name::String="")
@@ -18,7 +19,7 @@ function PrepareTable(session::SimTreeUtils.SimTreeSession, data; prefix="", nam
         end
     else
         println(prefix)
-        df = formatData(data, name)        
+        df = formatData(data, name)
         if size(df) == (0, 0) 
             println("   Skip empty DataFrame")
             return
@@ -26,6 +27,10 @@ function PrepareTable(session::SimTreeUtils.SimTreeSession, data; prefix="", nam
 
         SimTreeUtils.InsertDuckDBDataFrame(session, prefix, df; schema="results")
     end
+end
+function TestPrepareTable(session::SimTreeUtils.SimTreeSession, data)
+    df = formatData(data, "testing")
+    SimTreeUtils.InsertDuckDBDataFrame(session, prefix, df; schema="fullresults")
 end
 
 function formatData(data, name::String)::DataFrame
