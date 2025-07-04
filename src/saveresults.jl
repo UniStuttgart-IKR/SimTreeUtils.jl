@@ -5,7 +5,6 @@ function SaveBSON(session::SimTreeUtils.SimTreeSession, results)
     #   Daraus Tabellen-Name
     #       Dann Daten mit formatData
     test(session, results)
-    
 end
 
 ##Aus Lokaler Testumgebung
@@ -19,21 +18,23 @@ end
 function PrepareTable(data; prefix=[], name=nothing, rows=[])
     if data isa NamedTuple
         for (k, v) in pairs(data)
-            PrepareTable(v; prefix = isempty(prefix) ? string(k) : "$prefix.$k", name = k, rows)
+            PrepareTable(v; prefix = isempty(prefix) ? string(k) : "$prefix_$k", name = k, rows)
         end
     elseif data isa Dict
         for (k, v) in pairs(data)
-            PrepareTable(v; prefix = "$prefix['$k']", name = k, rows)
+            PrepareTable(v; prefix = "$prefix_$k", name = k, rows)
         end
-    elseif data isa Tuple || data isa AbstractArray
-        for (i, v) in enumerate(data)
-            if i > max_array_iteration
-                continue
-            end
-            PrepareTable(v; prefix = "$prefix[$i]", name = i, rows)
-        end
+    #elseif data isa Tuple || data isa AbstractArray
+    #    for (i, v) in enumerate(data)
+    #        if i > max_array_iteration
+    #            continue
+    #        end
+    #        PrepareTable(v; prefix = "$prefix[$i]", name = i, rows)
+    #    end
     elseif data isa String
         push!(rows, (prefix = prefix, name = name, value = data))
+    else
+        println(prefix)
     end
     return rows
 end
