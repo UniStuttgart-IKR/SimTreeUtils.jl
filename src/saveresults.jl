@@ -14,9 +14,9 @@ function PrepareTable(session::SimTreeUtils.SimTreeSession, data; prefix="", nam
         end
     else
         println(prefix)
-        df = formatData(data, name)
+        df = formatData(data, name)        
         if size(df) == (0, 0) 
-            println("DataFrame ist komplett leer (0x0)")
+            println("   DataFrame ist komplett leer (0x0)")
         else
             SimTreeUtils.InsertDuckDBDataFrame(session, "results_$(prefix)", df)
         end
