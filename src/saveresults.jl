@@ -8,15 +8,15 @@ function SaveBSON(session::SimTreeUtils.SimTreeSession, results)
 end
 
 function PrepareTable(session::SimTreeUtils.SimTreeSession, data; prefix="", name::String="")
+    if name == "PARAMSDICT"
+        return
+    end
+
     if data isa NamedTuple || data isa Dict
         for (k, v) in pairs(data)
             PrepareTable(session, v; prefix = isempty(prefix) ? string(k) : "$(prefix)_$(k)", name = k)
         end
     else
-        if name == "PARAMSDICT"
-            return
-        end
-
         println(prefix)
         df = formatData(data, name)        
         if size(df) == (0, 0) 
