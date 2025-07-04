@@ -18,11 +18,11 @@ end
 function PrepareTable(data; prefix=[], name=nothing, rows=[])
     if data isa NamedTuple
         for (k, v) in pairs(data)
-            PrepareTable(v; prefix = isempty(prefix) ? string(k) : "$prefix_$k", name = k, rows)
+            PrepareTable(v; prefix = isempty(prefix) ? string(k) : "$(prefix)_$(k)", name = k, rows)
         end
     elseif data isa Dict
         for (k, v) in pairs(data)
-            PrepareTable(v; prefix = "$prefix_$k", name = k, rows)
+            PrepareTable(v; prefix = "$(prefix)_$(k)", name = k, rows)
         end
     #elseif data isa Tuple || data isa AbstractArray
     #    for (i, v) in enumerate(data)
