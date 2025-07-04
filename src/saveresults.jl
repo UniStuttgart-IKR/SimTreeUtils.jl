@@ -85,8 +85,9 @@ function normalize(
         #ToDo: Add as BLOB
         new_row = copy(row)
         new_row["$(total)_$(name)_BLOB"] = data
-        
+
         push!(rows, new_row)
+        println("'$(total)_$(name)_BLOB' IN")
         #println(typeof(data))
     end
 
