@@ -88,14 +88,14 @@ function CreateDuckDBTable(session::SimTreeUtils.SimTreeSession, tableName::Stri
     createColumns = join(["$k $(GetDuckDBType(v))" for (k, v) in columns], ", ")
 
     tableName = CreateSchema(session, schema, tableName)
-    _executeDuckDBQuery(session, "CREATE TABLE IF NOT EXISTS $tableName (TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP, $createColumns)")
+    _executeDuckDBQuery(session, "CREATE TABLE IF NOT EXISTS $(tableName) (TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP, $createColumns)")
 
     for (k, v) in columns
         AddDuckDBTableColumn(session, tableName, k, v)
     end
 end
 function AddDuckDBTableColumn(session::SimTreeSession, tableName::String, column::String, columntype::Type)
-    _executeDuckDBQuery(session, "ALTER TABLE $tableName ADD COLUMN IF NOT EXISTS $column $(GetDuckDBType(columntype))")
+    _executeDuckDBQuery(session, "ALTER TABLE $(tableName) ADD COLUMN IF NOT EXISTS $column $(GetDuckDBType(columntype))")
 end
 #############################
 #   Insert Data
@@ -127,14 +127,12 @@ end
 function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::DataFrame; schema::Union{String, Nothing}=nothing)
     insertcols!(df, 1, (k => fill(v, nrow(df)) for (k, v) in session.PARAMSDICT)...)
 
-    println("$(schema) - $(tableName)")
     tableName = CreateSchema(session, schema, tableName)
 
-    println(tableName)
     # register it as a view in the database
     DuckDB.register_data_frame(session.duckDBcon, df, "$(tableName)_view")
-    DBInterface.execute(session.duckDBcon, "CREATE TABLE $(tableName) AS SELECT * FROM '$(tableName)_view'")
-    DBInterface.execute(session.duckDBcon, "DROP VIEW IF EXISTS '$(tableName)_view'")
+    DBInterface.execute(session.duckDBcon, "CREATE TABLE $(tableName) AS SELECT * FROM $(tableName)_view")
+    DBInterface.execute(session.duckDBcon, "DROP VIEW IF EXISTS $(tableName)_view")
 end
 function CreateSchema(session::SimTreeSession, schema::Union{String, Nothing}, tableName::String)
     if schema === nothing

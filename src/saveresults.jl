@@ -24,30 +24,25 @@ function PrepareTable(session::SimTreeUtils.SimTreeSession, data; prefix="", nam
 end
 
 function formatData(data, name::String)::DataFrame
-    #println("01 - Normalize Data")
     rows = normalize(data, name;)
     
-    #println("02 - Get all Keys")
     all_keys = Set{String}()
     for row in rows
         union!(all_keys, keys(row))
     end
     ordered_keys = sort(collect(all_keys))
 
-    #println("03 - Fill EMpty Cells")
     filled = [
         Dict(k => get(row, k, missing) for k in ordered_keys)
         for row in rows
     ]
     
-    #println("04 - Sort NAmed KEys")
     named = [
         NamedTuple{Tuple(Symbol.(ordered_keys))}(
             [row[k] for k in ordered_keys]
         ) for row in filled
     ]
     
-    #println("05 - Export DataFrame")
     df = DataFrame(named)
     return df
 end
