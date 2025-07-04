@@ -14,7 +14,6 @@ end
 function formatData(data)::DataFrame
     println("01 - Normalize Data")
     rows = normalize(data)
-    println(data)
     
     println("02 - Get all Keys")
     all_keys = Set{String}()
