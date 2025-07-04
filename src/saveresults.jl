@@ -55,34 +55,34 @@ end
 function normalize(
         data::Any,
         name::String;
-        total::Int = 1,
-        level::Int = 1,
         row::Dict{String, Any} = Dict{String, Any}(),
         rows::Vector{Dict{String, Any}} = Dict{String, Any}[]
     )::Vector{Dict{String, Any}}
     
     if data isa NamedTuple || data isa Dict
         for (k, v) in pairs(data)
-            #normalize(v; prefix = [prefix... , string(k)], out = out, sep = sep, level = level+1)
+            newname = "$(name)[k]"
+            
             new_row = copy(row)
-            new_row["$(total)_$(k)"] = string(k)
-            normalize(v, "$(name)[k]"; total = total + 1, level = level + 1, row = new_row, rows = rows)
+            new_row[newname] = string(k)
+            normalize(v, newname; row = new_row, rows = rows)
         end
     elseif data isa Tuple || data isa AbstractArray
         for (i, v) in enumerate(data)
-            #normalize(v; prefix = [prefix..., string(i)], out = out, sep = sep, level = level)
+            newname = "$(name)[]"
+
             new_row = copy(row)
-            new_row["$(name)[]_index"] = i
-            normalize(v, "$(name)[]"; total = total + 1, level = level, row = new_row, rows = rows)
+            new_row["$(newname)_index"] = i
+            normalize(v, newname;  row = new_row, rows = rows)
         end
     elseif typeof(data) in primitive_types
         new_row = copy(row)
-        new_row["$(name)[]_value"] = data
+        new_row["$(name)_value"] = data
 
         push!(rows, new_row)
     else
         new_row = copy(row)
-        new_row["$(name)[]_BLOB"] = string(data)
+        new_row["$(name)_BLOB"] = string(data)
 
         push!(rows, new_row)
     end
