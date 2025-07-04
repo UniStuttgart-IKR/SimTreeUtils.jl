@@ -87,7 +87,7 @@ function CreateDuckDBTable(session::SimTreeUtils.SimTreeSession, tableName::Stri
 
     createColumns = join(["$k $(GetDuckDBType(v))" for (k, v) in columns], ", ")
 
-    tableName = CreateSchema(schema, tableName)
+    tableName = CreateSchema(session, schema, tableName)
     _executeDuckDBQuery(session, "CREATE TABLE IF NOT EXISTS $tableName (TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP, $createColumns)")
 
     for (k, v) in columns
@@ -110,24 +110,24 @@ function AppendDuckDBData(session::SimTreeUtils.SimTreeSession, tableName::Strin
     #SimTreeUtils.ViewDuckDBScheme(session)
 end
 function AddDuckDBTableRow(session::SimTreeSession, tableName::String, data::Vector; schema::Union{String, Nothing}=nothing)
-    #tableName = CreateSchema(schema, tableName)
+    #tableName = CreateSchema(ssession, chema, tableName)
     columns = join([v for (v) in data], ", ")
     _executeDuckDBQuery(session, "INSERT INTO $(tableName) VALUES($columns)")
 end
 function AddDuckDBTableRow(session::SimTreeSession, tableName::String, data::Dict{String, Any}; schema::Union{String, Nothing}=nothing)
-    #tableName = CreateSchema(schema, tableName)
+    #tableName = CreateSchema(session, schema, tableName)
     columns = join(["$v AS $k" for (k, v) in data], ", ")
     _executeDuckDBQuery(session, "INSERT INTO $(tableName) BY NAME (SELECT $columns)")
 end
 function AddDuckDBTableRow(session::SimTreeSession, tableName::String, data::OrderedDict{String, Any}; schema::Union{String, Nothing}=nothing)
-    #tableName = CreateSchema(schema, tableName)
+    #tableName = CreateSchema(session, schema, tableName)
     columns = join(["$v AS $k" for (k, v) in data], ", ")
     _executeDuckDBQuery(session, "INSERT INTO $(tableName) BY NAME (SELECT $columns)")
 end
 function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::DataFrame; schema::Union{String, Nothing}=nothing)
     insertcols!(df, 1, (k => fill(v, nrow(df)) for (k, v) in session.PARAMSDICT)...)
 
-    tableName = CreateSchema(schema, tableName)
+    tableName = CreateSchema(session, schema, tableName)
 
     # register it as a view in the database
     DuckDB.register_data_frame(session.duckDBcon, df, "$(tableName)_view")

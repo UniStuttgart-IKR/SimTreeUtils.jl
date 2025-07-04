@@ -65,7 +65,7 @@ function normalize(
         for (k, v) in pairs(data)
             #normalize(v; prefix = [prefix... , string(k)], out = out, sep = sep, level = level+1)
             new_row = copy(row)
-            new_row["$(total)_level_$level"] = string(k)
+            new_row["$(total)_$(k)"] = string(k)
             normalize(v, string(k); total = total + 1, level = level + 1, row = new_row, rows = rows)
         end
     elseif data isa Tuple || data isa AbstractArray
@@ -73,25 +73,14 @@ function normalize(
             #normalize(v; prefix = [prefix..., string(i)], out = out, sep = sep, level = level)
             new_row = copy(row)
             new_row["$(total)_$(name)_index"] = i
-            normalize(v, name; total = total + 1, level = level, row = new_row, rows = rows)
+            normalize(v, name; total = total, level = level, row = new_row, rows = rows)
         end
     elseif typeof(data) in primitive_types
         
         new_row = copy(row)
         new_row["$(total)_$(name)_value"] = data
 
-        # println(row)
-        # println(new_row)
-        # readline()
         push!(rows, new_row)
-
-
-        #key = join(prefix, ".")
-        #row = (key = key, value = data)
-        #print(row)
-
-        #out[key] = data
-        #push!(out, row)
     else
         #ToDo: Add as BLOB
         #println(typeof(data))
@@ -99,42 +88,4 @@ function normalize(
 
     return rows
 
-end
-
-function flatten(data; prefix=[], name=nothing, rows=[])
-    if data isa NamedTuple
-        for (k, v) in pairs(data)
-            flatten(v; prefix = isempty(prefix) ? string(k) : "$prefix.$k", name = k, rows)
-        end
-    elseif data isa Dict
-        for (k, v) in pairs(data)
-            flatten(v; prefix = "$prefix['$k']", name = k, rows)
-        end
-    elseif data isa Tuple || data isa AbstractArray
-        for (i, v) in enumerate(data)
-            flatten(v; prefix = "$prefix[$i]", name = i, rows)
-        end
-    else
-        push!(rows, (prefix = prefix, name = name, value = data))
-    end
-    return rows
-end
-
-function extractData(data; prefix=[], rows=[])
-    if data isa NamedTuple
-        for (k, v) in pairs(data)
-            extractData(v; prefix = isempty(prefix) ? string(k) : "$prefix.$k", rows)
-        end
-    elseif data isa Dict
-        for (k, v) in pairs(data)
-            extractData(v; prefix = "$prefix['$k']", rows)
-        end
-    elseif data isa Tuple || data isa AbstractArray
-        for (i, v) in enumerate(data)
-            extractData(v; prefix = "$prefix[$i]", rows)
-        end
-    else
-        push!(rows, (key = prefix, value = data))
-    end
-    return rows
 end
