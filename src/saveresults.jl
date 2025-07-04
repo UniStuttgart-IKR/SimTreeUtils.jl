@@ -15,20 +15,20 @@ function test(session::SimTreeUtils.SimTreeSession, data)
     #SimTreeUtils.InsertDuckDBDataFrame(session, "test_table", df)
 end
 
-function PrepareTable(data; prefix="", name=nothing)
+function PrepareTable(data; prefix="", name::String="")
     if data isa NamedTuple || data isa Dict
         for (k, v) in pairs(data)
             PrepareTable(v; prefix = isempty(prefix) ? string(k) : "$(prefix)_$(k)", name = k)
         end
     else
         println(prefix)
-        formatData(data)
+        formatData(data, name)
     end
 end
 
-function formatData(data)::DataFrame
+function formatData(data, name::String)::DataFrame
     #println("01 - Normalize Data")
-    rows = normalize(data)
+    rows = normalize(data, name;)
     
     #println("02 - Get all Keys")
     all_keys = Set{String}()
@@ -59,12 +59,12 @@ function formatData(data)::DataFrame
 end
 
 function normalize(
-        data::Any;
+        data::Any,
+        name::String;
         total::Int = 1,
         level::Int = 1,
         row::Dict{String, Any} = Dict{String, Any}(),
-        rows::Vector{Dict{String, Any}} = Dict{String, Any}[],
-        previous::Union{String, Nothing} = nothing
+        rows::Vector{Dict{String, Any}} = Dict{String, Any}[]
     )::Vector{Dict{String, Any}}
     
     if data isa NamedTuple || data isa Dict
@@ -72,28 +72,20 @@ function normalize(
             #normalize(v; prefix = [prefix... , string(k)], out = out, sep = sep, level = level+1)
             new_row = copy(row)
             new_row["$(total)_level_$level"] = string(k)
-            normalize(v; total = total + 1, level = level + 1, row = new_row, rows = rows, previous = string(k))
+            normalize(v, string(k); total = total + 1, level = level + 1, row = new_row, rows = rows)
         end
     elseif data isa Tuple || data isa AbstractArray
         for (i, v) in enumerate(data)
             #normalize(v; prefix = [prefix..., string(i)], out = out, sep = sep, level = level)
             new_row = copy(row)
-            if previous === nothing
-                new_row["$(total)_level_$level"] = i
-                normalize(v; total = total + 1, level = level + 1, row = new_row, rows = rows, previous = previous)
-            else
-                new_row["$(total)_$(previous)_index"] = i
-                normalize(v; total = total + 1, level = level, row = new_row, rows = rows, previous = previous)
-            end
+            new_row["$(total)_$(name)_index"] = i
+            normalize(v, name; total = total + 1, level = level, row = new_row, rows = rows)
         end
     elseif typeof(data) in primitive_types
         
         new_row = copy(row)
-        if previous === nothing
-            new_row["$(total)_$(level)_value"] = data
-        else
-            new_row["$(total)_$(previous)_value"] = data
-        end
+        new_row["$(total)_$(name)_value"] = data
+
         # println(row)
         # println(new_row)
         # readline()
