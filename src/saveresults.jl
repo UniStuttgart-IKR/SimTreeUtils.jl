@@ -11,7 +11,7 @@ end
 ##Aus Lokaler Testumgebung
 
 function test(session::SimTreeUtils.SimTreeSession, data)::DataFrame
-    println(PrepareTable(data))
+    describe(PrepareTable(data))
     #describe(df)
     #SimTreeUtils.InsertDuckDBDataFrame(session, "test_table", df)
 end
