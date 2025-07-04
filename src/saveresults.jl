@@ -85,6 +85,16 @@ function normalize(
             new_row[newname] = i
             normalize(v, newname;  row = new_row, rows = rows)
         end
+    elseif typeof(data) in primitive_numeric
+        new_row = copy(row)
+        new_row["$(name)_int"] = data
+
+        push!(rows, new_row)
+    elseif typeof(data) in primitive_float
+        new_row = copy(row)
+        new_row["$(name)_float"] = data
+
+        push!(rows, new_row)
     elseif typeof(data) in primitive_types
         new_row = copy(row)
         new_row["$(name)_value"] = data
