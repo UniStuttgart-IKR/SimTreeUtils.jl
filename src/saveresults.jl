@@ -13,13 +13,18 @@ function PrepareTable(session::SimTreeUtils.SimTreeSession, data; prefix="", nam
             PrepareTable(session, v; prefix = isempty(prefix) ? string(k) : "$(prefix)_$(k)", name = k)
         end
     else
+        if name == "PARAMSDICT"
+            return
+        end
+
         println(prefix)
         df = formatData(data, name)        
         if size(df) == (0, 0) 
-            println("   DataFrame ist komplett leer (0x0)")
-        else
-            SimTreeUtils.InsertDuckDBDataFrame(session, prefix, df; schema="results")
+            println("   Skip empty DataFrame")
+            return
         end
+
+        SimTreeUtils.InsertDuckDBDataFrame(session, prefix, df; schema="results")
     end
 end
 
