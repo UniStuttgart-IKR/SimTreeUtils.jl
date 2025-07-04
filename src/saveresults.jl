@@ -76,7 +76,6 @@ function normalize(
             normalize(v, name; total = total, level = level, row = new_row, rows = rows)
         end
     elseif typeof(data) in primitive_types
-        
         new_row = copy(row)
         new_row["$(total)_$(name)_value"] = data
 
@@ -86,7 +85,11 @@ function normalize(
         println("'$(total)_$(name)_BLOB'")
 
         json = JSON3.write(data)
-        normalize(string(json), name = "$(name)_BLOB"; total = total, level = level, row = new_row, rows = rows)
+        
+        new_row = copy(row)
+        new_row["$(total)_$(name)_BLOB"] = string(data)
+
+        push!(rows, new_row)
     end
 
     return rows
