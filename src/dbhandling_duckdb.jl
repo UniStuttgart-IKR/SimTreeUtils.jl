@@ -127,7 +127,7 @@ end
 function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::DataFrame; schema::Union{String, Nothing}=nothing)
     insertcols!(df, 1, (k => fill(v, nrow(df)) for (k, v) in session.PARAMSDICT)...)
 
-    println(schema + " - " + tableName)
+    println("$(schema) - $(tableName)")
     tableName = CreateSchema(session, schema, tableName)
 
     println(tableName)
