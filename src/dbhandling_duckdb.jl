@@ -127,11 +127,13 @@ end
 function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::DataFrame; schema::Union{String, Nothing}=nothing)
     insertcols!(df, 1, (k => fill(v, nrow(df)) for (k, v) in session.PARAMSDICT)...)
 
+    println(schema + " - " + tableName)
     tableName = CreateSchema(session, schema, tableName)
 
+    println(tableName)
     # register it as a view in the database
     DuckDB.register_data_frame(session.duckDBcon, df, "$(tableName)_view")
-    DBInterface.execute(session.duckDBcon, "CREATE TABLE $tableName AS SELECT * FROM $(tableName)_view")
+    DBInterface.execute(session.duckDBcon, "CREATE TABLE $(tableName) AS SELECT * FROM $(tableName)_view")
     DBInterface.execute(session.duckDBcon, "DROP VIEW IF EXISTS $(tableName)_view")
 end
 function CreateSchema(session::SimTreeSession, schema::Union{String, Nothing}, tableName::String)
