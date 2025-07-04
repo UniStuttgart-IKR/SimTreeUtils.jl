@@ -133,15 +133,15 @@ function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::D
     println(tableName)
     # register it as a view in the database
     DuckDB.register_data_frame(session.duckDBcon, df, "$(tableName)_view")
-    DBInterface.execute(session.duckDBcon, "CREATE TABLE $(tableName) AS SELECT * FROM $(tableName)_view")
-    DBInterface.execute(session.duckDBcon, "DROP VIEW IF EXISTS $(tableName)_view")
+    DBInterface.execute(session.duckDBcon, "CREATE TABLE $(tableName) AS SELECT * FROM '$(tableName)_view'")
+    DBInterface.execute(session.duckDBcon, "DROP VIEW IF EXISTS '$(tableName)_view'")
 end
 function CreateSchema(session::SimTreeSession, schema::Union{String, Nothing}, tableName::String)
     if schema === nothing
         return tableName
     else
         DBInterface.execute(session.duckDBcon, "CREATE SCHEMA IF NOT EXISTS $schema")
-        return "$(session.app).$(schema).$(tableName)"
+        return "$(schema).$(tableName)"
     end
 end
 #############################
