@@ -141,7 +141,7 @@ function CreateSchema(session::SimTreeSession, schema::Union{String, Nothing}, t
         return tableName
     else
         DBInterface.execute(session.duckDBcon, "CREATE SCHEMA IF NOT EXISTS $schema")
-        return "$(schema).$(tableName)"
+        return "$(session.app).$(schema).$(tableName)"
     end
 end
 #############################
