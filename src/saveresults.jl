@@ -29,7 +29,7 @@ function PrepareTable(session::SimTreeUtils.SimTreeSession, data; prefix="", nam
     end
 end
 function TestPrepareTable(session::SimTreeUtils.SimTreeSession, data)
-    df = formatData(data, "testing")
+    df = formatData(data, "root")
     SimTreeUtils.InsertDuckDBDataFrame(session, "testing", df; schema="fullresults")
 end
 
