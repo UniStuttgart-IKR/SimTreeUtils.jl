@@ -83,6 +83,8 @@ function normalize(
         push!(rows, new_row)
     else
         #ToDo: Add as BLOB
+        new_row = copy(row)
+        new_row["$(total)_$(name)_BLOB"] = data
         #println(typeof(data))
     end
 
