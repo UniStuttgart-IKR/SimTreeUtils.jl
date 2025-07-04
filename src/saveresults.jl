@@ -29,8 +29,8 @@ function PrepareTable(session::SimTreeUtils.SimTreeSession, data; prefix="", nam
     end
 end
 function TestPrepareTable(session::SimTreeUtils.SimTreeSession, data)
-    df = formatData(data, "root")
-    SimTreeUtils.InsertDuckDBDataFrame(session, "full", df; schema="fullresults")
+    df = formatData(data, "results")
+    SimTreeUtils.InsertDuckDBDataFrame(session, "results", df; schema="fullresults")
 end
 
 function formatData(data, name::String)::DataFrame
@@ -93,6 +93,11 @@ function normalize(
     elseif typeof(data) in primitive_float
         new_row = copy(row)
         new_row["$(name)_float"] = data
+
+        push!(rows, new_row)
+    elseif typeof(data) in primitive_string
+        new_row = copy(row)
+        new_row["$(name)_text"] = data
 
         push!(rows, new_row)
     elseif typeof(data) in primitive_types

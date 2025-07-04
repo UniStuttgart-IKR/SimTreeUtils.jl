@@ -22,9 +22,10 @@ using Plots
 export copyresults, findrelpaths, getparameters, simsnum, getsims, getsimspath, SimTreeSession, TestSession, CloseSession, SaveBSON, logValues, saveDB
 
 
-const primitive_types = Set([Int, Float64, Bool, Char, UInt8, Int32, Float32])
-const primitive_numeric = Set([Int, UInt8, Int32])
-const primitive_float = Set([Float64, Float32])
+const primitive_types = Set([Int, Int32, Int64, UInt8, Float32, Float64, Bool, Char,])
+const primitive_numeric = Set([Int, Int32, Int64, UInt8])
+const primitive_float = Set([Float32, Float64])
+const primitive_string = Set([String])
 
 include("dynamiclogger.jl")         #Extends TeeLogger
 include("simTreeSession.jl")        #Holds Session Variables
