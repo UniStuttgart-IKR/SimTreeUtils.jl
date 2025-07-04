@@ -22,7 +22,7 @@ function PrepareTable(data; prefix="", name=nothing)
         end
     elseif data isa Dict
         for (k, v) in pairs(data)
-            PrepareTable(v; prefix = "$(prefix)_$(k)", name = k)
+            PrepareTable(v; prefix = isempty(prefix) ? string(k) : "$(prefix)_$(k)", name = k)
         end
     #elseif data isa Tuple || data isa AbstractArray
     #    for (i, v) in enumerate(data)
@@ -83,7 +83,7 @@ function normalize(
         for (i, v) in enumerate(data)
             #normalize(v; prefix = [prefix..., string(i)], out = out, sep = sep, level = level)
             new_row = copy(row)
-            if previous == nothing
+            if previous === nothing
                 new_row["$(total)_level_$level"] = i
                 normalize(v; total = total + 1, level = level + 1, row = new_row, rows = rows, previous = previous)
             else
@@ -94,7 +94,7 @@ function normalize(
     elseif typeof(data) in primitive_types
         
         new_row = copy(row)
-        if previous == nothing
+        if previous === nothing
             new_row["$(total)_$(level)_value"] = data
         else
             new_row["$(total)_$(previous)_value"] = data
