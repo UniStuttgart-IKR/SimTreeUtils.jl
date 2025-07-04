@@ -83,12 +83,10 @@ function normalize(
         push!(rows, new_row)
     else
         #ToDo: Add as BLOB
-        new_row = copy(row)
-        new_row["$(total)_$(name)_BLOB"] = data
+        println("'$(total)_$(name)_BLOB'")
 
-        push!(rows, new_row)
-        println("'$(total)_$(name)_BLOB' IN")
-        #println(typeof(data))
+        json = JSON3.write(data)
+        normalize(string(json), name = "$(name)_BLOB"; total = total, level = level, row = new_row, rows = rows)
     end
 
     return rows
