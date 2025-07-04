@@ -4,25 +4,18 @@ function SaveBSON(session::SimTreeUtils.SimTreeSession, results)
     #   Durchloopen aller initialer Strings
     #   Daraus Tabellen-Name
     #       Dann Daten mit formatData
-    test(session, results)
+    PrepareTable(session, results)
 end
 
-##Aus Lokaler Testumgebung
-
-function test(session::SimTreeUtils.SimTreeSession, data)
-    PrepareTable(data)
-    #describe(df)
-    #SimTreeUtils.InsertDuckDBDataFrame(session, "test_table", df)
-end
-
-function PrepareTable(data; prefix="", name::String="")
+function PrepareTable(session::SimTreeUtils.SimTreeSession, data; prefix="", name::String="")
     if data isa NamedTuple || data isa Dict
         for (k, v) in pairs(data)
-            PrepareTable(v; prefix = isempty(prefix) ? string(k) : "$(prefix)_$(k)", name = k)
+            PrepareTable(session, v; prefix = isempty(prefix) ? string(k) : "$(prefix)_$(k)", name = k)
         end
     else
         println(prefix)
-        formatData(data, name)
+        df = formatData(data, name)
+        SimTreeUtils.InsertDuckDBDataFrame(session, "results.$(prefix)", df)
     end
 end
 
@@ -52,9 +45,6 @@ function formatData(data, name::String)::DataFrame
     
     #println("05 - Export DataFrame")
     df = DataFrame(named)
-    println(typeof(df))
-    println(df)
-    describe(df)
     return df
 end
 
