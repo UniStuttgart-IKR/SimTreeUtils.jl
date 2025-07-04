@@ -15,27 +15,24 @@ function test(session::SimTreeUtils.SimTreeSession, data)
     #SimTreeUtils.InsertDuckDBDataFrame(session, "test_table", df)
 end
 
-function PrepareTable(data; prefix="", name=nothing, rows=[])
+function PrepareTable(data; prefix="", name=nothing)
     if data isa NamedTuple
         for (k, v) in pairs(data)
-            PrepareTable(v; prefix = isempty(prefix) ? string(k) : "$(prefix)_$(k)", name = k, rows)
+            PrepareTable(v; prefix = isempty(prefix) ? string(k) : "$(prefix)_$(k)", name = k)
         end
     elseif data isa Dict
         for (k, v) in pairs(data)
-            PrepareTable(v; prefix = "$(prefix)_$(k)", name = k, rows)
+            PrepareTable(v; prefix = "$(prefix)_$(k)", name = k)
         end
     #elseif data isa Tuple || data isa AbstractArray
     #    for (i, v) in enumerate(data)
-    #        PrepareTable(v; prefix = "$prefix[$i]", name = i, rows)
+    #        PrepareTable(v; prefix = "$prefix[$i]", name = i)
     #    end
-    elseif data isa String
-        push!(rows, (prefix = prefix, name = name, value = data))
     else
         println(prefix)
         df = formatData(data)
         describe(df)
     end
-    return rows
 end
 
 function formatData(data)::DataFrame
