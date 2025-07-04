@@ -73,7 +73,7 @@ function normalize(
             #normalize(v; prefix = [prefix..., string(i)], out = out, sep = sep, level = level)
             new_row = copy(row)
             new_row["$(total)_$(name)_index"] = i
-            normalize(v, name; total = total, level = level, row = new_row, rows = rows)
+            normalize(v, name; total = total + 1, level = level, row = new_row, rows = rows)
         end
     elseif typeof(data) in primitive_types
         new_row = copy(row)
@@ -81,11 +81,6 @@ function normalize(
 
         push!(rows, new_row)
     else
-        #ToDo: Add as BLOB
-        println("'$(total)_$(name)_BLOB'")
-
-        json = JSON3.write(data)
-        
         new_row = copy(row)
         new_row["$(total)_$(name)_BLOB"] = string(data)
 
