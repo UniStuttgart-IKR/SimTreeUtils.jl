@@ -6,7 +6,7 @@ function SaveBSON(session::SimTreeUtils.SimTreeSession, results)
     PrepareTable_Results(session, results, "results", "", "")
 
     #Insert Complete Dataset as one large Table
-    InsertData(session, data, "fullresults", "results", "results")
+    InsertData(session, results, "fullresults", "results", "results")
 end
 
 #############################
