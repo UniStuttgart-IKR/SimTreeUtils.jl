@@ -13,7 +13,7 @@ end
 #   Results - Split results by Dict-Values
 #############################
 function PrepareTable_Results(session::SimTreeUtils.SimTreeSession, data, schemaName::String, tableName::String="", columnName::String="")
-    if name == "PARAMSDICT"
+    if columnName == "PARAMSDICT"
         return
     end
 
