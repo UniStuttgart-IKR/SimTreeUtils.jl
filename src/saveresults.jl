@@ -1,38 +1,48 @@
+#############################
+#   Initialize Session
+#############################
 function SaveBSON(session::SimTreeUtils.SimTreeSession, results)
-    println(typeof(results))
-    #Vorgehen:
-    #   Durchloopen aller initialer Strings
-    #   Daraus Tabellen-Name
-    #       Dann Daten mit formatData
-    PrepareTable(session, results)
-    TestPrepareTable(session, results)
+    #Split data into smaller Tables
+    PrepareTable_Results(session, results, "results", "", "")
+
+    #Insert Complete Dataset as one large Table
+    InsertData(session, data, "fullresults", "results", "results")
 end
 
-function PrepareTable(session::SimTreeUtils.SimTreeSession, data; prefix="", name::String="")
+#############################
+#   Results - Split results by Dict-Values
+#############################
+function PrepareTable_Results(session::SimTreeUtils.SimTreeSession, data, schemaName::String, tableName::String="", columnName::String="")
     if name == "PARAMSDICT"
         return
     end
 
     if data isa NamedTuple || data isa Dict
         for (k, v) in pairs(data)
-            PrepareTable(session, v; prefix = isempty(prefix) ? string(k) : "$(prefix)_$(k)", name = k)
+            PrepareTable_Results(session, v, schemaName, isempty(tableName) ? string(k) : "$(tableName)_$(k)", k)
         end
     else
-        println(prefix)
-        df = formatData(data, name)
-        if size(df) == (0, 0) 
-            println("   Skip empty DataFrame")
-            return
-        end
-
-        SimTreeUtils.InsertDuckDBDataFrame(session, prefix, df; schema="results")
+        InsertData(session, data, schemaName, tableName, columnName)
     end
 end
-function TestPrepareTable(session::SimTreeUtils.SimTreeSession, data)
-    df = formatData(data, "results")
-    SimTreeUtils.InsertDuckDBDataFrame(session, "results", df; schema="fullresults")
+
+#############################
+#   Insert Data into DuckDB
+#############################
+function InsertData(session::SimTreeUtils.SimTreeSession, data, schemaName::String, tableName::String, columnName::String)
+    df = formatData(data, columnName)
+
+    if size(df) == (0, 0) 
+        println("[$(schemaName).$(tableName)]   Skip empty DataFrame")
+        return
+    end
+
+    SimTreeUtils.InsertDuckDBDataFrame(session, tableName, df; schema=schemaName)
 end
 
+#############################
+#   Format JSON Routine
+#############################
 function formatData(data, name::String)::DataFrame
     rows = normalize(data, name;)
     
@@ -57,6 +67,9 @@ function formatData(data, name::String)::DataFrame
     return df
 end
 
+#############################
+#   Normalize Data (From Dict/Array to Row-Based Datastructure)
+#############################
 function normalize(
         data::Any,
         name::String;
