@@ -93,7 +93,11 @@ function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String
         SimTreeUtils.PrepareSession(session, SIMTREE_RESULTS_PATH, PARAMSDICT, SEED, datapath)
 
         @debug "Prod-Logger initialized!"
-        results = simulatefunction(session, PARAMSDICT, SEED, datapath)
+        if hasmethod(simulatefunction, Tuple{typeof(session)})
+            results = simulatefunction(session, PARAMSDICT, SEED, datapath)
+        else
+            results = simulatefunction(PARAMSDICT, SEED, datapath)
+        end
         SimTreeUtils.ViewDBSchema(session)
 
         SimTreeUtils.CloseSession(session)
