@@ -98,7 +98,7 @@ function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String
         else
             results = simulatefunction(PARAMSDICT, SEED, datapath)
         end
-        SimTreeUtils.ViewDBSchema(session)
+        #SimTreeUtils.ViewDBSchema(session)
 
         SimTreeUtils.CloseSession(session)
 
