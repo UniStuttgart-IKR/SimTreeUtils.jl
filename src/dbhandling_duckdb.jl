@@ -51,12 +51,20 @@ function _executeDuckDBQuery(session::SimTreeUtils.SimTreeSession, query::String
     if session.useDuckDB == false
         return
     end
+
+    if session.duckDBcon === nothing
+        OpenDuckDB(session, session.duckDBfile, false)
+    end
     
     DBInterface.execute(session.duckDBcon, query)
 end
 function _executeDuckDBSelect(session::SimTreeUtils.SimTreeSession, query::String)::DataFrames.DataFrame
     if session.useDuckDB == false
         return
+    end
+
+    if session.duckDBcon === nothing
+        OpenDuckDB(session, session.duckDBfile, false)
     end
     
     return DBInterface.execute(session.duckDBcon, query) |> DataFrames.DataFrame
@@ -132,14 +140,14 @@ function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::D
 
     # register it as a view in the database
     DuckDB.register_data_frame(session.duckDBcon, df, "$(viewName)")
-    DBInterface.execute(session.duckDBcon, "CREATE TABLE $(tableName) AS SELECT * FROM $(viewName)")
-    DBInterface.execute(session.duckDBcon, "DROP VIEW IF EXISTS $(viewName)")
+    _executeDuckDBQuery(session, "CREATE TABLE $(tableName) AS SELECT * FROM $(viewName)")
+    _executeDuckDBQuery(session, "DROP VIEW IF EXISTS $(viewName)")
 end
 function CreateSchema(session::SimTreeSession, schema::Union{String, Nothing}, tableName::String)
     if schema === nothing
         return tableName
     else
-        DBInterface.execute(session.duckDBcon, "CREATE SCHEMA IF NOT EXISTS $schema")
+        _executeDuckDBQuery(session, "CREATE SCHEMA IF NOT EXISTS $schema")
         return "$(schema).$(tableName)"
     end
 end
