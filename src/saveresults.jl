@@ -23,7 +23,7 @@ function PrepareTable_Results(session::SimTreeUtils.SimTreeSession, data, schema
             newdict = copy(resultsPath)
             newdict["r[$(index)]"] = k
 
-            PrepareTable_Results(session, v, schemaName, isempty(tableName) ? string(k) : "$(tableName)_$(k)", newdict)
+            PrepareTable_Results(session, v, schemaName, isempty(tableName) ? string(k) : "$(tableName)_$(k)", k, newdict)
         end
     else
         InsertData(session, data, schemaName, tableName, columnName, resultsPath) # Übergeben: resultsPath
