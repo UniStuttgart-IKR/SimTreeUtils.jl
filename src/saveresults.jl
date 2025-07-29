@@ -3,39 +3,45 @@
 #############################
 function SaveBSON(session::SimTreeUtils.SimTreeSession, results)
     #Split data into smaller Tables
-    PrepareTable_Results(session, results, "results", "", "")
+    PrepareTable_Results(session, results, "results", "", "", OrderedDict{String, Any}())
 
     #Insert Complete Dataset as one large Table
-    InsertData(session, results, "fullresults", "results", "results")
+    InsertData(session, results, "fullresults", "results", "results", OrderedDict{String, Any}())
 end
 
 #############################
 #   Results - Split results by Dict-Values
 #############################
-function PrepareTable_Results(session::SimTreeUtils.SimTreeSession, data, schemaName::String, tableName::String="", columnName::String="")
+function PrepareTable_Results(session::SimTreeUtils.SimTreeSession, data, schemaName::String, tableName::String, columnName::String, resultsPath::OrderedDict{String, Any})
     if columnName == "PARAMSDICT"
         return
     end
 
     if data isa NamedTuple || data isa Dict
         for (k, v) in pairs(data)
-            PrepareTable_Results(session, v, schemaName, isempty(tableName) ? string(k) : "$(tableName)_$(k)", k)
+            index = length(resultsPath) + 1
+            newdict = copy(resultsPath)
+            newdict["r[$(index)]"] = k
+
+            PrepareTable_Results(session, v, schemaName, isempty(tableName) ? string(k) : "$(tableName)_$(k)", newdict)
         end
     else
-        InsertData(session, data, schemaName, tableName, columnName)
+        InsertData(session, data, schemaName, tableName, columnName, resultsPath) # Übergeben: resultsPath
     end
 end
 
 #############################
 #   Insert Data into DuckDB
 #############################
-function InsertData(session::SimTreeUtils.SimTreeSession, data, schemaName::String, tableName::String, columnName::String)
+function InsertData(session::SimTreeUtils.SimTreeSession, data, schemaName::String, tableName::String, columnName::String, resultsPath::OrderedDict{String, Any})
     df = formatData(data, columnName)
 
     if size(df) == (0, 0) 
-        println("[$(schemaName).$(tableName)]   Skip empty DataFrame")
+        println("[$(schemaName).$(tableName)] Skip empty DataFrame")
         return
     end
+
+    insertcols!(df, 1, (k => fill(v, nrow(df)) for (k, v) in resultsPath)...)
 
     SimTreeUtils.InsertDuckDBDataFrame(session, tableName, df; schema=schemaName)
 end

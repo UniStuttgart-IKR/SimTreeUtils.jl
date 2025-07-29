@@ -133,7 +133,7 @@ function AddDuckDBTableRow(session::SimTreeSession, tableName::String, data::Ord
     _executeDuckDBQuery(session, "INSERT INTO $(tableName) BY NAME (SELECT $columns)")
 end
 function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::DataFrame; schema::Union{String, Nothing}=nothing)
-    insertcols!(df, 1, ("PARAMSDICT[$(k)]" => fill(v, nrow(df)) for (k, v) in session.PARAMSDICT)...)
+    insertcols!(df, 1, ("p[$(k)]" => fill(v, nrow(df)) for (k, v) in session.PARAMSDICT)...)
 
     viewName = "$(tableName)_view"
     tableName = CreateSchema(session, schema, tableName)
