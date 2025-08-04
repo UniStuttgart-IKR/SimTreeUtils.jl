@@ -71,12 +71,12 @@ function PrepareSession(session::SimTreeUtils.SimTreeSession, SIMTREE_RESULTS_PA
 
     #Initialize DuckDB Connection+DB (One DB per Parameter-Set)
     if session.useDuckDB
-        SimTreeUtils.OpenDuckDB(session, "$(session.SIMTREE_RESULTS_PATH)/$(session.app).duckdb", drop)
+        SimTreeUtils.OpenDuckDB(session, "$(session.SIMTREE_RESULTS_PATH)/results.duckdb", drop)
     end
 
     #Initialize SQLIte Connection+DB (One single DB with multiple Write-Connections => WAL)
     if session.useSQLite
-        SimTreeUtils.OpenSQLiteDB(session, "$(session.SIMTREE_RESULTS_PATH)/$(session.app).sqlite", drop)
+        SimTreeUtils.OpenSQLiteDB(session, "$(session.SIMTREE_RESULTS_PATH)/results.sqlite", drop)
     end
 
     SaveSession(session)
