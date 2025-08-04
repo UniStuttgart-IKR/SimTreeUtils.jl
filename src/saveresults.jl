@@ -3,10 +3,10 @@
 #############################
 function SaveBSON(session::SimTreeUtils.SimTreeSession, results)
     #Split data into smaller Tables
-    PrepareTable_Results(session, results, "results", "", "", OrderedDict{String, Any}())
+    PrepareTable_Results(session, results, "bson_results", "", "", OrderedDict{String, Any}())
 
     #Insert Complete Dataset as one large Table
-    InsertData(session, results, "fullresults", "results", "results", OrderedDict{String, Any}())
+    #InsertData(session, results, "fullresults", "results", "results", OrderedDict{String, Any}())
 end
 
 #############################
