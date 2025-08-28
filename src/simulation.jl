@@ -31,6 +31,16 @@ function getsimtreeparams(simtreedirectory::String=".")::Dict{String,Vector{Stri
     return parvaldict
 end
 
+function stLoadResults(session, PARAMSDICT, SEED, datapath)
+    @debug "[BSON-Load] Loading"
+    results = BSON.load("$SIMTREE_RESULTS_PATH/study.bson")
+    @debug "[BSON-Load] Loading"
+    return results
+end
+function reCreateDuckDB()
+    SimTreeUtils.stsimulate(stLoadResults; savefile=false)
+end
+
 """
 $(TYPEDSIGNATURES)
 
@@ -107,12 +117,12 @@ function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String
             @debug "[BSON-Save] Saving"
             BSON.bson("$SIMTREE_RESULTS_PATH/study.bson", results)
             @debug "[BSON-Save] Saved"
+        end
 
-            if session.useDuckDB
-                @debug "[DuckDB-Save] Saving"
-                SimTreeUtils.SaveBSON(session, results)
-                @debug "[DuckDB-Save] Saved"
-            end
+        if session.useDuckDB
+            @debug "[DuckDB-Save] Saving"
+            SimTreeUtils.SaveBSON(session, results)
+            @debug "[DuckDB-Save] Saved"
         end
         @debug "Prod-Logger closed"
     #end
