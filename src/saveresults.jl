@@ -129,7 +129,7 @@ function normalize(
     else
         new_row = copy(row)
         new_row["$(name)_BLOB"] = Vector{UInt8}(data)
-        new_row["$(name)_DATA"] = string(data)
+        #new_row["$(name)_DATA"] = string(data)
 
         push!(rows, new_row)
     end
