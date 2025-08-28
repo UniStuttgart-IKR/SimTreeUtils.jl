@@ -100,7 +100,7 @@ function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String
         @debug "Init-Logger closed"
         
         #Prepare Session for Production
-        SimTreeUtils.PrepareSession(session, SIMTREE_RESULTS_PATH, PARAMSDICT, SEED, datapath)
+        SimTreeUtils.PrepareSession(session, SIMTREE_RESULTS_PATH, PARAMSDICT, SEED, datapath; drop=true)
 
         @debug "Prod-Logger initialized!"
         if hasmethod(simulatefunction, Tuple{typeof(session)})

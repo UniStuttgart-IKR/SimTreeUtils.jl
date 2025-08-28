@@ -1,7 +1,7 @@
 #############################
 #   Open & Close DB
 #############################
-function OpenDuckDB(session::SimTreeUtils.SimTreeSession, dbfile::String, drop::Bool)
+function OpenDuckDB(session::SimTreeUtils.SimTreeSession, dbfile::String; dropDataBase::Bool=false, createParamsDictTable::Bool=false)
     if session.useDuckDB == false
         return
     end
@@ -12,16 +12,25 @@ function OpenDuckDB(session::SimTreeUtils.SimTreeSession, dbfile::String, drop::
         return
     end
 
-    SimTreeUtils.simpleLog(session, "[DuckDB] Creating Database '$(session.duckDBfile))' Drop: $drop"; level=Logging.Debug)
+    SimTreeUtils.simpleLog(session, "[DuckDB] Creating Database '$(session.duckDBfile))' Drop: $dropDataBase"; level=Logging.Debug)
 
-    if drop==true && isfile(session.duckDBfile)
+    if dropDataBase==true && isfile(session.duckDBfile)
         SimTreeUtils.simpleLog(session, "[DuckDB] Drop Previos Database '$(session.duckDBfile))'"; level=Logging.Debug)
         rm(session.duckDBfile)
     end
 
     session.duckDBcon = DBInterface.connect(DuckDB.DB, session.duckDBfile)
     
-    SimTreeUtils.simpleLog(session, "[DuckDB] Connection established; '$(session.duckDBfile))' Drop: $drop"; level=Logging.Debug)
+    SimTreeUtils.simpleLog(session, "[DuckDB] Connection established; '$(session.duckDBfile))' Drop: $dropDataBase"; level=Logging.Debug)
+
+    if createParamsDictTable
+        CreateParamsDictTable(session)
+    end
+end
+function CreateParamsDictTable(session::SimTreeUtils.SimTreeSession)
+    columnsDict = OrderedDict{String, Type}((("p[$(k)]" => typeof(v)) for (k, v) in session.PARAMSDICT)...)
+    dataDict = OrderedDict{String, Any}((("p[$(k)]" => isa(v, String) ? "'$v'" : v) for (k, v) in session.PARAMSDICT)...)
+    AppendDuckDBData(session, "PARAMSDICT", columnsDict, dataDict; defaultColumns=false)
 end
 function CloseDuckDB(session::SimTreeUtils.SimTreeSession)
     if session.useDuckDB == false
@@ -53,7 +62,7 @@ function _executeDuckDBQuery(session::SimTreeUtils.SimTreeSession, query::String
     end
 
     if session.duckDBcon === nothing
-        OpenDuckDB(session, session.duckDBfile, false)
+        OpenDuckDB(session, session.duckDBfile)
     end
     
     DBInterface.execute(session.duckDBcon, query)
@@ -64,7 +73,7 @@ function _executeDuckDBSelect(session::SimTreeUtils.SimTreeSession, query::Strin
     end
 
     if session.duckDBcon === nothing
-        OpenDuckDB(session, session.duckDBfile, false)
+        OpenDuckDB(session, session.duckDBfile)
     end
     
     return DBInterface.execute(session.duckDBcon, query) |> DataFrames.DataFrame
@@ -88,7 +97,7 @@ end
 #############################
 #   Create & Alter Tables
 #############################
-function CreateDuckDBTable(session::SimTreeUtils.SimTreeSession, tableName::String, columns::OrderedDict{String, Type}; schema::Union{String, Nothing}=nothing)
+function CreateDuckDBTable(session::SimTreeUtils.SimTreeSession, tableName::String, columns::OrderedDict{String, Type}; schema::Union{String, Nothing}=nothing, defaultColumns::Bool=true)
     if session.useDuckDB == false
         return
     end
@@ -96,7 +105,11 @@ function CreateDuckDBTable(session::SimTreeUtils.SimTreeSession, tableName::Stri
     createColumns = join(["$k $(GetDuckDBType(v))" for (k, v) in columns], ", ")
 
     tableName = CreateSchema(session, schema, tableName)
-    _executeDuckDBQuery(session, "CREATE TABLE IF NOT EXISTS $(tableName) (TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP, $createColumns)")
+    if defaultColumns
+        _executeDuckDBQuery(session, "CREATE TABLE IF NOT EXISTS $(tableName) (TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP, $createColumns)")
+    else
+        _executeDuckDBQuery(session, "CREATE TABLE IF NOT EXISTS $(tableName) ($createColumns)")
+    end
 
     for (k, v) in columns
         AddDuckDBTableColumn(session, tableName, k, v)
@@ -108,12 +121,12 @@ end
 #############################
 #   Insert Data
 #############################
-function AppendDuckDBData(session::SimTreeUtils.SimTreeSession, tableName::String, columnsDict::OrderedDict{String, Type}, dataDict::OrderedDict{String, Any}; schema::Union{String, Nothing}=nothing)
+function AppendDuckDBData(session::SimTreeUtils.SimTreeSession, tableName::String, columnsDict::OrderedDict{String, Type}, dataDict::OrderedDict{String, Any}; schema::Union{String, Nothing}=nothing, defaultColumns::Bool=true)
     if session.useDuckDB == false
         return
     end
     
-    SimTreeUtils.CreateDuckDBTable(session, tableName, columnsDict; schema=schema)
+    SimTreeUtils.CreateDuckDBTable(session, tableName, columnsDict; schema=schema, defaultColumns=defaultColumns)
     SimTreeUtils.AddDuckDBTableRow(session, tableName, dataDict; schema=schema)
     #SimTreeUtils.ViewDuckDBScheme(session)
 end
@@ -132,8 +145,10 @@ function AddDuckDBTableRow(session::SimTreeSession, tableName::String, data::Ord
     columns = join(["$v AS $k" for (k, v) in data], ", ")
     _executeDuckDBQuery(session, "INSERT INTO $(tableName) BY NAME (SELECT $columns)")
 end
-function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::DataFrame; schema::Union{String, Nothing}=nothing)
-    insertcols!(df, 1, ("p[$(k)]" => fill(v, nrow(df)) for (k, v) in session.PARAMSDICT)...)
+function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::DataFrame; schema::Union{String, Nothing}=nothing, insertParamsDict::Bool=true)
+    if insertParamsDict
+        insertcols!(df, 1, ("p[$(k)]" => fill(v, nrow(df)) for (k, v) in session.PARAMSDICT)...)
+    end
 
     viewName = "$(tableName)_view"
     tableName = CreateSchema(session, schema, tableName)

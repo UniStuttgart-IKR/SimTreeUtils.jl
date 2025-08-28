@@ -1,18 +1,20 @@
 #############################
 #   Initialize Session
 #############################
-function SaveBSON(session::SimTreeUtils.SimTreeSession, results)
-    #Split data into smaller Tables
-    PrepareTable_Results(session, results, "bson_results", "", "", OrderedDict{String, Any}())
-
-    #Insert Complete Dataset as one large Table
-    #InsertData(session, results, "fullresults", "results", "results", OrderedDict{String, Any}())
+function SaveBSON(session::SimTreeUtils.SimTreeSession, results; createFullTable::Bool=false, insertParamsDict::Bool=false)
+    if createFullTable
+        #Insert Complete Dataset as one large Table
+        InsertData(session, results, "fullresults", "results", "results", OrderedDict{String, Any}(), insertParamsDict)
+    else
+        #Split data into smaller Tables
+        PrepareTable_Results(session, results, "bson_results", "", "", OrderedDict{String, Any}(), insertParamsDict)
+    end
 end
 
 #############################
 #   Results - Split results by Dict-Values
 #############################
-function PrepareTable_Results(session::SimTreeUtils.SimTreeSession, data, schemaName::String, tableName::String, columnName::String, resultsPath::OrderedDict{String, Any})
+function PrepareTable_Results(session::SimTreeUtils.SimTreeSession, data, schemaName::String, tableName::String, columnName::String, resultsPath::OrderedDict{String, Any}, insertParamsDict::Bool=true)
     if columnName == "PARAMSDICT"
         return
     end
@@ -23,17 +25,17 @@ function PrepareTable_Results(session::SimTreeUtils.SimTreeSession, data, schema
             newdict = copy(resultsPath)
             newdict["r[$(index)]"] = k
 
-            PrepareTable_Results(session, v, schemaName, isempty(tableName) ? string(k) : "$(tableName)_$(k)", string(k), newdict)
+            PrepareTable_Results(session, v, schemaName, isempty(tableName) ? string(k) : "$(tableName)_$(k)", string(k), newdict, insertParamsDict)
         end
     else
-        InsertData(session, data, schemaName, tableName, columnName, resultsPath) # Übergeben: resultsPath
+        InsertData(session, data, schemaName, tableName, columnName, resultsPath, insertParamsDict) # Übergeben: resultsPath
     end
 end
 
 #############################
 #   Insert Data into DuckDB
 #############################
-function InsertData(session::SimTreeUtils.SimTreeSession, data, schemaName::String, tableName::String, columnName::String, resultsPath::OrderedDict{String, Any})
+function InsertData(session::SimTreeUtils.SimTreeSession, data, schemaName::String, tableName::String, columnName::String, resultsPath::OrderedDict{String, Any}, insertParamsDict::Bool=true)
     df = formatData(data, columnName)
 
     if size(df) == (0, 0) 
@@ -43,7 +45,7 @@ function InsertData(session::SimTreeUtils.SimTreeSession, data, schemaName::Stri
 
     insertcols!(df, 1, (k => fill(v, nrow(df)) for (k, v) in resultsPath)...)
 
-    SimTreeUtils.InsertDuckDBDataFrame(session, tableName, df; schema=schemaName)
+    SimTreeUtils.InsertDuckDBDataFrame(session, tableName, df; schema=schemaName, insertParamsDict=insertParamsDict)
 end
 
 #############################

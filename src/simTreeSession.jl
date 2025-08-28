@@ -71,7 +71,7 @@ function PrepareSession(session::SimTreeUtils.SimTreeSession, SIMTREE_RESULTS_PA
 
     #Initialize DuckDB Connection+DB (One DB per Parameter-Set)
     if session.useDuckDB
-        SimTreeUtils.OpenDuckDB(session, "$(session.SIMTREE_RESULTS_PATH)/results.duckdb", drop)
+        SimTreeUtils.OpenDuckDB(session, "$(session.SIMTREE_RESULTS_PATH)/results.duckdb"; dropDataBase=drop, createParamsDictTable=true)
     end
 
     #Initialize SQLIte Connection+DB (One single DB with multiple Write-Connections => WAL)
