@@ -128,7 +128,7 @@ function normalize(
         push!(rows, new_row)
     else
         new_row = copy(row)
-        new_row["$(name)_BLOB"] = Vector{UInt8}(data)
+        new_row["$(name)_BLOB"] = Vector{UInt8}(JSON3.write(data))
         #new_row["$(name)_DATA"] = string(data)
 
         push!(rows, new_row)
