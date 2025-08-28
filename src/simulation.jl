@@ -31,7 +31,7 @@ function getsimtreeparams(simtreedirectory::String=".")::Dict{String,Vector{Stri
     return parvaldict
 end
 
-function stLoadResults(session, PARAMSDICT, SEED, datapath)
+function stLoadResults(session::SimTreeUtils.SimTreeSession, PARAMSDICT, SEED, datapath)
     @debug "[BSON-Load] Loading"
     results = BSON.load("$SIMTREE_RESULTS_PATH/study.bson")
     @debug "[BSON-Load] Loading"
