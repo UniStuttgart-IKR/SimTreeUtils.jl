@@ -113,7 +113,3 @@ function GetSession(session::Union{SimTreeUtils.SimTreeSession, Nothing})::SimTr
     end
     return session
 end
-
-function TestBSON(result)
-    println("Hallo Welt")
-end
