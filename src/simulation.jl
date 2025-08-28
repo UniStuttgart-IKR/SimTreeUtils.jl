@@ -31,9 +31,9 @@ function getsimtreeparams(simtreedirectory::String=".")::Dict{String,Vector{Stri
     return parvaldict
 end
 
-function stLoadResults(PARAMSDICT, SEED, datapath)
+function stLoadResults(session::SimTreeUtils.SimTreeSession, PARAMSDICT, SEED, datapath)
     @debug "[BSON-Load] Loading"
-    results = BSON.load("$SIMTREE_RESULTS_PATH/study.bson")
+    results = BSON.load("$(session.SIMTREE_RESULTS_PATH)/study.bson")
     @debug "[BSON-Load] Loading"
     return results
 end
@@ -103,7 +103,8 @@ function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String
         SimTreeUtils.PrepareSession(session, SIMTREE_RESULTS_PATH, PARAMSDICT, SEED, datapath; drop=true)
 
         @debug "Prod-Logger initialized!"
-        if hasmethod(simulatefunction, Tuple{typeof(session)}) #REWRITE, not working properly!
+        paramscnt = length(first(methods(simulatefunction)).sig.parameters) -1
+        if paramscnt == 4
             results = simulatefunction(session, PARAMSDICT, SEED, datapath)
         else
             results = simulatefunction(PARAMSDICT, SEED, datapath)
