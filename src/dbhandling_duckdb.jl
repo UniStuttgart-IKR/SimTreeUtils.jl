@@ -28,8 +28,8 @@ function OpenDuckDB(session::SimTreeUtils.SimTreeSession, dbfile::String; dropDa
     end
 end
 function CreateParamsDictTable(session::SimTreeUtils.SimTreeSession)
-    columnsDict = OrderedDict{String, Type}((("p[$(k)]" => typeof(v)) for (k, v) in session.PARAMSDICT)...)
-    dataDict = OrderedDict{String, Any}((("p[$(k)]" => isa(v, String) ? "'$v'" : v) for (k, v) in session.PARAMSDICT)...)
+    columnsDict = OrderedDict{String, Type}((("$(k)" => typeof(v)) for (k, v) in session.PARAMSDICT)...)
+    dataDict = OrderedDict{String, Any}((("$(k)" => isa(v, String) ? "'$v'" : v) for (k, v) in session.PARAMSDICT)...)
     AppendDuckDBData(session, "PARAMSDICT", columnsDict, dataDict; defaultColumns=false)
 end
 function CloseDuckDB(session::SimTreeUtils.SimTreeSession)
