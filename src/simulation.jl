@@ -47,7 +47,7 @@ function testRun(session::SimTreeUtils.SimTreeSession, PARAMSDICT, SEED, datapat
 end
 function testSim()
     @info "Test 123"
-    SimTreeUtils.stsimulate(testRun; savefile=false, useDuckDB=false, RESULT_DIR=".")
+    SimTreeUtils.stsimulate(testRun; savefile=false, useDuckDB=false, RESULT_DIR=pwd())
     @info "Test 123 done"
     #session = SimTreeUtils.InitializeSession("Unnamed", false, false, false)
     #starguments=TOML.parsefile("./simtree_arguments.toml")
