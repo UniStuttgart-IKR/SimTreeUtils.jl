@@ -166,6 +166,7 @@ function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::D
     appender = DuckDB.Appender(session.duckDBcon, tableName, schema)
     for i in eachrow(df)
         for j in i
+            print(typeof(j))
             DuckDB.append(appender, j)
         end
         DuckDB.end_row(appender)
