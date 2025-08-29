@@ -159,7 +159,7 @@ function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::D
     #_executeDuckDBQuery(session, "CREATE TABLE $(tableName) AS SELECT * FROM $(viewName)")
     #_executeDuckDBQuery(session, "DROP VIEW IF EXISTS $(viewName)")
 
-    columnsDict = join([k => typeof(v) for (k, v) in df], ", ")
+    columnsDict = OrderedDict{String, Type}(name => eltype(df[!, name]) for name in names(df))
     print(columnsDict)
     #CreateDuckDBTable(session, tableName, columnsDict; schema=schema)
     return
