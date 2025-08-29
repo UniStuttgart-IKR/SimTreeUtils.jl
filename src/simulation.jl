@@ -41,14 +41,16 @@ function reCreateDuckDB()
     SimTreeUtils.stsimulate(stLoadResults; savefile=false)
 end
 function testRun(session::SimTreeUtils.SimTreeSession, PARAMSDICT, SEED, datapath)
+    print("SIMTREE_RESULTS_PATH:")
     print(session.SIMTREE_RESULTS_PATH)
+    print("SESSION:")
     print(session)
     return Nothing
 end
 function testSim()
-    @info "Test 123"
+    print("Start Sim")
     SimTreeUtils.stsimulate(testRun; savefile=false, useDuckDB=false, RESULT_DIR=pwd())
-    @info "Test 123 done"
+    print("End Sim")
     #session = SimTreeUtils.InitializeSession("Unnamed", false, false, false)
     #starguments=TOML.parsefile("./simtree_arguments.toml")
     #print(starguments)
