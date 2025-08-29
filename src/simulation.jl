@@ -40,9 +40,16 @@ end
 function reCreateDuckDB()
     SimTreeUtils.stsimulate(stLoadResults; savefile=false)
 end
+function testRun(session::SimTreeUtils.SimTreeSession, PARAMSDICT, SEED, datapath)
+    return Nothing
+end
 function testSim()
-    results = BSON.load("study.bson")
-    print(results)
+    #@info "Test 123"
+    #SimTreeUtils.stsimulate(testRun; savefile=false)
+    #@info "Test 123 done"
+    session = SimTreeUtils.InitializeSession(app, useLokiLogger, useDuckDB, useSQLite)
+    starguments=TOML.parsefile("./simtree_arguments.toml")
+    print(starguments)
 end
 
 """
