@@ -92,7 +92,7 @@ const julia_to_duckDB = Dict(
     Nothing => "NULL",
     Vector{UInt8} => "BLOB"
 )
-function GetDuckDBType(column::Type; default::String="BLOB")::String
+function GetDuckDBType(column::Type; default::String="TEXT")::String
     return get(julia_to_duckDB, column, default)
 end
 #############################
@@ -163,15 +163,15 @@ function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::D
     CreateDuckDBTable(session, tableName, columnsDict; schema=schema, defaultColumns=false)
     
     # append data by row
-    #appender = DuckDB.Appender(session.duckDBcon, tableName, schema)
-    #for i in eachrow(df)
-    #    for j in i
-    #        DuckDB.append(appender, j)
-    #    end
-    #    DuckDB.end_row(appender)
-    #end
+    appender = DuckDB.Appender(session.duckDBcon, tableName, schema)
+    for i in eachrow(df)
+        for j in i
+            DuckDB.append(appender, j)
+        end
+        DuckDB.end_row(appender)
+    end
     # close the appender after all rows
-    #DuckDB.close(appender)
+    DuckDB.close(appender)
 end
 function CreateSchema(session::SimTreeSession, schema::Union{String, Nothing}, tableName::String)
     if schema === nothing
