@@ -47,7 +47,7 @@ function testSim()
     #@info "Test 123"
     #SimTreeUtils.stsimulate(testRun; savefile=false)
     #@info "Test 123 done"
-    session = SimTreeUtils.InitializeSession(app, useLokiLogger, useDuckDB, useSQLite)
+    session = SimTreeUtils.InitializeSession("Unnamed", false, false, false)
     starguments=TOML.parsefile("./simtree_arguments.toml")
     print(starguments)
 end
