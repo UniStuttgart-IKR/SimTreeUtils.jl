@@ -41,15 +41,16 @@ function reCreateDuckDB()
     SimTreeUtils.stsimulate(stLoadResults; savefile=false)
 end
 function testRun(session::SimTreeUtils.SimTreeSession, PARAMSDICT, SEED, datapath)
+    print(session.SIMTREE_RESULTS_PATH)
     return Nothing
 end
 function testSim()
-    #@info "Test 123"
-    #SimTreeUtils.stsimulate(testRun; savefile=false)
-    #@info "Test 123 done"
-    session = SimTreeUtils.InitializeSession("Unnamed", false, false, false)
-    starguments=TOML.parsefile("./simtree_arguments.toml")
-    print(starguments)
+    @info "Test 123"
+    SimTreeUtils.stsimulate(testRun; savefile=false, useDuckDB=false, RESULT_DIR=".")
+    @info "Test 123 done"
+    #session = SimTreeUtils.InitializeSession("Unnamed", false, false, false)
+    #starguments=TOML.parsefile("./simtree_arguments.toml")
+    #print(starguments)
 end
 
 """
@@ -57,7 +58,7 @@ $(TYPEDSIGNATURES)
 
 Wraps the function you want to run through SimTree simulate
 """
-function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String="Unnamed", useLokiLogger::Bool=false, useDuckDB::Bool=true, useSQLite::Bool=false)
+function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String="Unnamed", useLokiLogger::Bool=false, useDuckDB::Bool=true, useSQLite::Bool=false, RESULT_DIR::String=nothing)
     #Initialize Variables
     SEED = -1
     datapath = ""
@@ -71,14 +72,18 @@ function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String
     #Logging.with_logger(session.logger) do
         @debug "Init-Logger initialized!"
 
-        if haskey(ENV, "SIMTREE_RESULTS_PATH")
-            SIMTREE_RESULTS_PATH = ENV["SIMTREE_RESULTS_PATH"]
+        if RESULT_DIR === nothing
+            if haskey(ENV, "SIMTREE_RESULTS_PATH")
+                SIMTREE_RESULTS_PATH = ENV["SIMTREE_RESULTS_PATH"]
+            else
+                @warn "Now resultspath set using $(pwd())/results"
+                SIMTREE_RESULTS_PATH = "$(pwd())/results"
+            end
+            @info "SIMTREE_RESULTS_PATH: " * SIMTREE_RESULTS_PATH
         else
-            @warn "Now resultspath set using $(pwd())/results"
-            SIMTREE_RESULTS_PATH = "$(pwd())/results"
+            SIMTREE_RESULTS_PATH = RESULT_DIR
         end
-        @info "SIMTREE_RESULTS_PATH: " * SIMTREE_RESULTS_PATH
-
+        
         starguments=TOML.parsefile("$SIMTREE_RESULTS_PATH/simtree_arguments.toml")
         if starguments === nothing
             @warn "starguments empty"
