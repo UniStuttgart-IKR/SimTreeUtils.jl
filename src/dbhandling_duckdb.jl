@@ -89,7 +89,8 @@ const julia_to_duckDB = Dict(
     String  => "TEXT",
     Bool    => "BOOLEAN",
     Missing => "NULL",
-    Nothing => "NULL"
+    Nothing => "NULL",
+    Vector{UInt8} => "BLOB"
 )
 function GetDuckDBType(column::Type; default::String="BLOB")::String
     return get(julia_to_duckDB, column, default)
@@ -154,9 +155,23 @@ function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::D
     tableName = CreateSchema(session, schema, tableName)
 
     # register it as a view in the database
-    DuckDB.register_data_frame(session.duckDBcon, df, "$(viewName)")
-    _executeDuckDBQuery(session, "CREATE TABLE $(tableName) AS SELECT * FROM $(viewName)")
-    _executeDuckDBQuery(session, "DROP VIEW IF EXISTS $(viewName)")
+    #DuckDB.register_data_frame(session.duckDBcon, df, "$(viewName)")
+    #_executeDuckDBQuery(session, "CREATE TABLE $(tableName) AS SELECT * FROM $(viewName)")
+    #_executeDuckDBQuery(session, "DROP VIEW IF EXISTS $(viewName)")
+
+    columnsDict = join([k => typeof(v) for (k, v) in df], ", ")
+    print(columnsDict)
+    #CreateDuckDBTable(session, tableName, columnsDict; schema=schema)
+    return
+    appender = DuckDB.Appender(session.duckDBcon, tableName)
+    for i in eachrow(df)
+        for j in i
+            DuckDB.append(appender, j)
+        end
+        DuckDB.end_row(appender)
+    end
+    # close the appender after all rows
+    DuckDB.close(appender)
 end
 function CreateSchema(session::SimTreeSession, schema::Union{String, Nothing}, tableName::String)
     if schema === nothing

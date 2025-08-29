@@ -128,9 +128,9 @@ function normalize(
         push!(rows, new_row)
     else
         new_row = copy(row)
-        blob = to_blob(data)
-        revert = from_blob(blob)
-        new_row["$(name)_DATA"] = string(blob)
+        #blob = to_blob(data)
+        #revert = from_blob(blob)
+        new_row["$(name)_BLOB"] = to_blob(data)
 
         push!(rows, new_row)
     end
