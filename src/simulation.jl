@@ -40,13 +40,9 @@ end
 function reCreateDuckDB()
     SimTreeUtils.stsimulate(stLoadResults; savefile=false)
 end
-function testRun(session::SimTreeUtils.SimTreeSession, PARAMSDICT, SEED, datapath)
-    return Nothing
-end
 function testSim()
-    @info "Test 123"
-    SimTreeUtils.stsimulate(testRun; savefile=false)
-    @info "Test 123 done"
+    results = BSON.load("study.bson")
+    print(results)
 end
 
 """
