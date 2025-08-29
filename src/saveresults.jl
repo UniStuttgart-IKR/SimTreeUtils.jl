@@ -130,7 +130,7 @@ function normalize(
         new_row = copy(row)
         blob = to_blob(data)
         revert = from_blob(blob)
-        new_row["$(name)_DATA"] = string(typeof(revert))
+        new_row["$(name)_DATA"] = string(blob)
 
         push!(rows, new_row)
     end
@@ -138,11 +138,7 @@ function normalize(
     return rows
 
 end
-function to_bson_blob(data)
-    io = IOBuffer()
-    bson(io, Dict(:data => data))
-    take!(io)
-end
+
 function to_blob(data)::Vector{UInt8}
     io = IOBuffer()
     serialize(io, data)
