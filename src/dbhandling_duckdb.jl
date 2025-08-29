@@ -103,7 +103,7 @@ function CreateDuckDBTable(session::SimTreeUtils.SimTreeSession, tableName::Stri
         return
     end
 
-    createColumns = join(["$k $(GetDuckDBType(v))" for (k, v) in columns], ", ")
+    createColumns = join(["\"$k\" $(GetDuckDBType(v))" for (k, v) in columns], ", ")
 
     tableName = CreateSchema(session, schema, tableName)
     if defaultColumns
@@ -160,7 +160,7 @@ function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::D
     #_executeDuckDBQuery(session, "DROP VIEW IF EXISTS $(viewName)")
 
     columnsDict = OrderedDict{String, Type}(name => eltype(df[!, name]) for name in names(df))
-    CreateDuckDBTable(session, tableName, columnsDict; schema=schema)
+    CreateDuckDBTable(session, tableName, columnsDict; schema=schema, defaultColumns=false)
     appender = DuckDB.Appender(session.duckDBcon, tableName)
     for i in eachrow(df)
         for j in i
