@@ -160,19 +160,26 @@ function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::D
     #_executeDuckDBQuery(session, "DROP VIEW IF EXISTS $(viewName)")
 
     columnsDict = OrderedDict{String, Type}(name => eltype(df[!, name]) for name in names(df))
-    CreateDuckDBTable(session, tableName, columnsDict; schema=schema, defaultColumns=false)
-    
+    fqtn = CreateDuckDBTable(session, tableName, columnsDict; schema=schema, defaultColumns=false)
+    _executeDuckDBQuery(session, "BEGIN TRANSACTION")
+
     # append data by row
-    appender = DuckDB.Appender(session.duckDBcon, tableName, schema)
-    for i in eachrow(df)
-        for j in i
-            print(typeof(j))
-            DuckDB.append(appender, j)
-        end
-        DuckDB.end_row(appender)
-    end
+    #appender = DuckDB.Appender(session.duckDBcon, tableName, schema)
+    #for i in eachrow(df)
+    #    for j in i
+    #        print(typeof(j))
+    #        DuckDB.append(appender, j)
+    #    end
+    #    DuckDB.end_row(appender)
+    #end
     # close the appender after all rows
-    DuckDB.close(appender)
+    #DuckDB.close(appender)
+    for i in eachrow(df)
+        columns = join(["$v AS \"$k\"" for (k, v) in i], ", ")
+        print(columns)
+        _executeDuckDBQuery(session, "INSERT INTO $fqtn VALUES($columns)")
+
+    _executeDuckDBQuery(session, "COMMIT")
 end
 function CreateSchema(session::SimTreeSession, schema::Union{String, Nothing}, tableName::String)
     if schema === nothing
