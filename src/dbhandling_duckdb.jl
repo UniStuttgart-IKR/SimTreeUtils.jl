@@ -161,7 +161,7 @@ function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::D
     #_executeDuckDBQuery(session, "DROP VIEW IF EXISTS $(viewName)")
 
     columnsDict = OrderedDict{String, Type}(name => eltype(df[!, name]) for name in names(df))
-    tableName = CreateDuckDBTable(session, tableName, columnsDict; schema=schema, defaultColumns=false)
+    CreateDuckDBTable(session, tableName, columnsDict; schema=schema, defaultColumns=false)
     
     # append data by row
     appender = DuckDB.Appender(session.duckDBcon, tableName)
