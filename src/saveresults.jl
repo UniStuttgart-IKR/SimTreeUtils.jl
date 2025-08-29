@@ -128,8 +128,9 @@ function normalize(
         push!(rows, new_row)
     else
         new_row = copy(row)
-        new_row["$(name)_BLOB"] = to_bson_blob(data)
-        #new_row["$(name)_DATA"] = string(data)
+        blob = to_blob(data)
+        revert = from_blob(bson)
+        new_row["$(name)_DATA"] = string(typeof(revert))
 
         push!(rows, new_row)
     end
