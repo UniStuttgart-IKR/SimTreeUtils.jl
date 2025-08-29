@@ -151,8 +151,8 @@ function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::D
         insertcols!(df, 1, ("p[$(k)]" => fill(v, nrow(df)) for (k, v) in session.PARAMSDICT)...)
     end
 
-    viewName = "$(tableName)_view"
-    tableName = CreateSchema(session, schema, tableName)
+    #viewName = "$(tableName)_view"
+    #tableName = CreateSchema(session, schema, tableName)
 
     # register it as a view in the database
     #DuckDB.register_data_frame(session.duckDBcon, df, "$(viewName)")
