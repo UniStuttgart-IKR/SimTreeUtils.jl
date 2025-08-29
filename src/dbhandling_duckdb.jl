@@ -115,7 +115,6 @@ function CreateDuckDBTable(session::SimTreeUtils.SimTreeSession, tableName::Stri
     for (k, v) in columns
         AddDuckDBTableColumn(session, tableName, k, v)
     end
-    return tableName
 end
 function AddDuckDBTableColumn(session::SimTreeSession, tableName::String, column::String, columntype::Type)
     _executeDuckDBQuery(session, "ALTER TABLE $(tableName) ADD COLUMN IF NOT EXISTS \"$column\" $(GetDuckDBType(columntype))")
@@ -164,7 +163,7 @@ function InsertDuckDBDataFrame(session::SimTreeSession, tableName::String, df::D
     CreateDuckDBTable(session, tableName, columnsDict; schema=schema, defaultColumns=false)
     
     # append data by row
-    appender = DuckDB.Appender(session.duckDBcon, tableName)
+    appender = DuckDB.Appender(session.duckDBcon, tableName, schema)
     for i in eachrow(df)
         for j in i
             DuckDB.append(appender, j)
