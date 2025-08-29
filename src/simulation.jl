@@ -41,6 +41,7 @@ function reCreateDuckDB()
     SimTreeUtils.stsimulate(stLoadResults; savefile=false)
 end
 function testSim()
+    print(pwd())
     SimTreeUtils.stsimulate(stLoadResults; savefile=false, useDuckDB=true, RESULT_DIR=pwd())
 end
 
