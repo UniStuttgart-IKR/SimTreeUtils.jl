@@ -42,6 +42,7 @@ function reCreateDuckDB()
 end
 function testRun(session::SimTreeUtils.SimTreeSession, PARAMSDICT, SEED, datapath)
     print(session.SIMTREE_RESULTS_PATH)
+    print(session)
     return Nothing
 end
 function testSim()
