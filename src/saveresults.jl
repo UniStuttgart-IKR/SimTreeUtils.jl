@@ -129,7 +129,7 @@ function normalize(
     else
         new_row = copy(row)
         blob = to_blob(data)
-        revert = from_blob(bson)
+        revert = from_blob(blob)
         new_row["$(name)_DATA"] = string(typeof(revert))
 
         push!(rows, new_row)
