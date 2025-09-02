@@ -129,13 +129,12 @@ function normalize(
     else
         #In Rücksprache: Ignore BLOBs
         #ToDO: BLOBs > DF > DuckDB wirft error; Insert muss via Row-Insert passieren
-        return rows
+        #return rows
         #new_row = copy(row)
         #blob = to_blob(data)
         #revert = from_blob(blob)
-        #new_row["$(name)_BLOB"] = to_blob(data)
-
-        #push!(rows, new_row)
+        new_row["$(name)_BLOB"] = false
+        push!(rows, new_row)
     end
 
     return rows
