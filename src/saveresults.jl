@@ -1,7 +1,7 @@
 #############################
 #   Initialize Session
 #############################
-function SaveBSON(session::SimTreeUtils.SimTreeSession, results; createFullTable::Bool=false, insertParamsDict::Bool=false)
+function SaveBSON(session::SimTreeUtils.SimTreeSession, results; createFullTable::Bool=false, insertParamsDict::Bool=true)
     if createFullTable
         #Insert Complete Dataset as one large Table
         InsertData(session, results, "fullresults", "results", "results", OrderedDict{String, Any}(), insertParamsDict)
@@ -127,12 +127,15 @@ function normalize(
 
         push!(rows, new_row)
     else
-        new_row = copy(row)
+        #In Rücksprache: Ignore BLOBs
+        #ToDO: BLOBs > DF > DuckDB wirft error; Insert muss via Row-Insert passieren
+        return rows
+        #new_row = copy(row)
         #blob = to_blob(data)
         #revert = from_blob(blob)
-        new_row["$(name)_BLOB"] = to_blob(data)
+        #new_row["$(name)_BLOB"] = to_blob(data)
 
-        push!(rows, new_row)
+        #push!(rows, new_row)
     end
 
     return rows
