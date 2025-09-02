@@ -8,6 +8,7 @@ using DimensionalData
 using BSON
 using TOML
 
+using Base64
 using DuckDB
 using SQLite
 using DataFrames
@@ -21,12 +22,6 @@ using Serialization
 using Plots
 
 export copyresults, findrelpaths, getparameters, simsnum, getsims, getsimspath, SimTreeSession, TestSession, CloseSession, SaveBSON, logValues, saveDB
-
-import DuckDB: create_logical_type  # wichtig: import, nicht using
-
-"Mappt Vector{UInt8} & Co. auf BLOB"
-create_logical_type(::Type{<:AbstractVector{UInt8}}) = DuckDB.LogicalType(DuckDB.DUCKDB_TYPE_BLOB)
-
 
 const primitive_types = Set([Int, Int32, Int64, UInt8, Float32, Float64, Bool, Char,])
 const primitive_numeric = Set([Int, Int32, Int64, UInt8])

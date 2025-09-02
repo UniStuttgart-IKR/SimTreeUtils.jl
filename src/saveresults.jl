@@ -142,11 +142,13 @@ function normalize(
 
 end
 
-function to_blob(data)::Vector{UInt8}
+function to_blob(data)::String
     io = IOBuffer()
     serialize(io, data)
-    return take!(io)  # Vector{UInt8}
+    bytes = take!(io)           # Vector{UInt8}
+    return base64encode(bytes)  # String
 end
-function from_blob(data::Vector{UInt8})
-    return deserialize(IOBuffer(data))
+function from_blob(data::String)
+    bytes = base64decode(data)
+    return deserialize(IOBuffer(bytes))
 end
