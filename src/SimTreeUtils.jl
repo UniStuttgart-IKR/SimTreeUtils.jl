@@ -8,7 +8,7 @@ using DimensionalData
 using BSON
 using TOML
 
-#using DuckDB
+using DuckDB
 using SQLite
 using DataFrames
 using LokiLogger
