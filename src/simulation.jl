@@ -50,7 +50,7 @@ $(TYPEDSIGNATURES)
 
 Wraps the function you want to run through SimTree simulate
 """
-function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String="Unnamed", useLokiLogger::Bool=false, useDuckDB::Bool=true, useSQLite::Bool=false, RESULT_DIR::String=nothing)
+function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String="Unnamed", useLokiLogger::Bool=true, useDuckDB::Bool=true, useSQLite::Bool=false, RESULT_DIR::String=nothing)
     #Initialize Variables
     SEED = -1
     datapath = ""
