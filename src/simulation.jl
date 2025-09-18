@@ -61,7 +61,7 @@ function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String
     session = SimTreeUtils.InitializeSession(app, useLokiLogger, useDuckDB, useSQLite)
 
     #Initialize Environment
-    #Logging.with_logger(session.logger) do
+    Logging.with_logger(session.logger) do
         @debug "Init-Logger initialized!"
 
         if RESULT_DIR === nothing
@@ -134,7 +134,7 @@ function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String
             @debug "[DuckDB-Save] Saved"
         end
         @debug "Prod-Logger closed"
-    #end
+    end
 
     #Return Data
     return results
