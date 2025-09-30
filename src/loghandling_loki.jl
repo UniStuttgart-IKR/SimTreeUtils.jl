@@ -4,13 +4,13 @@
 function simloginit(
     app::String,
     status::String = "initializing"
-    ;endpoint::String="http://netlabdesk5:3100")::LokiLogger.Logger
+    ;endpoint::String="http://netserv0:3100")::LokiLogger.Logger
     
     return _simloginit(endpoint, app, status, Dict{String, String}())
 end
 function simloginit(session::SimTreeUtils.SimTreeSession,
     status::String="prod"
-    ;endpoint::String="http://netlabdesk5:3100")::LokiLogger.Logger
+    ;endpoint::String="http://netserv0:3100")::LokiLogger.Logger
 
     return _simloginit(endpoint, session.app, status,
         Dict{String, String}("SEED" => string(session.SEED), "datapath" => session.datapath,
