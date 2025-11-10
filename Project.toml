@@ -23,7 +23,7 @@ Serialization = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 Suppressor = "fd094767-a336-5f1f-9728-57cf17d0bbfb"
 TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 [sources]
-LokiLogger={url="https://github.com/SvenKeksmann/LokiLogger.jl.git", rev="master"}
+LokiLogger={url="https://github.com/schlechter32/LokiLogger.jl.git", rev="master"}
 [compat]
 BSON = "0.3.9"
 Base64 = "1.11.0"
