@@ -2,7 +2,7 @@
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "9ec2971109302e1d7d025db39b0ecbe76ca41c49"
+project_hash = "9947e821d3d512892a7f1808eb8fae0adf4b101c"
 
 [[deps.Adapt]]
 deps = ["LinearAlgebra", "Requires"]
@@ -660,9 +660,9 @@ version = "1.2.0"
 
 [[deps.LokiLogger]]
 deps = ["HTTP", "JSON3", "Logging", "StructTypes", "URIs"]
-git-tree-sha1 = "587d466e2c601224a8d7a3cba674ec17d540aaed"
+git-tree-sha1 = "97d97ddda76e17e15acdaed4f849d2a286614430"
 repo-rev = "master"
-repo-url = "https://github.com/SvenKeksmann/LokiLogger.jl.git"
+repo-url = "https://github.com/schlechter32/LokiLogger.jl.git"
 uuid = "51d429d1-9683-4c89-86d7-889f440454ef"
 version = "1.1.0"
 
