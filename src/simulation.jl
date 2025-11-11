@@ -5,11 +5,11 @@ Get the SimTree parameters in a `Dictionary{String, Vector{String}}`
 SimTree must be installed.
 Give the root simtree directory
 """
-function getsimtreeparams(simtreedirectory::String=".")::Dict{String,Vector{String}}
-    cmd = Cmd(`SimTree list`; dir=simtreedirectory)
+function getsimtreeparams(simtreedirectory::String = ".")::Dict{String, Vector{String}}
+    cmd = Cmd(`SimTree list`; dir = simtreedirectory)
     iobf = IOBuffer()
     @suppress begin
-        run(pipeline(cmd, stdout=iobf))
+        run(pipeline(cmd, stdout = iobf))
     end
     seekstart(iobf)
 
@@ -38,11 +38,11 @@ function stLoadResults(session::SimTreeUtils.SimTreeSession, PARAMSDICT, SEED, d
     return results
 end
 function reCreateDuckDB()
-    SimTreeUtils.stsimulate(stLoadResults; savefile=false)
+    return SimTreeUtils.stsimulate(stLoadResults; savefile = false)
 end
 function testSim()
     print(pwd())
-    SimTreeUtils.stsimulate(stLoadResults; savefile=false, useDuckDB=true, RESULT_DIR=pwd())
+    return SimTreeUtils.stsimulate(stLoadResults; savefile = false, useDuckDB = true, RESULT_DIR = pwd())
 end
 
 """
@@ -50,7 +50,7 @@ $(TYPEDSIGNATURES)
 
 Wraps the function you want to run through SimTree simulate
 """
-function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String="Unnamed", useLokiLogger::Bool=true, useDuckDB::Bool=true, useSQLite::Bool=false, RESULT_DIR::Union{String, Nothing}=nothing)
+function stsimulate(simulatefunction::Function; savefile::Bool = true, app::String = "Unnamed", useLokiLogger::Bool = false, useDuckDB::Bool = false, useSQLite::Bool = false, RESULT_DIR::Union{String, Nothing} = nothing)
     #Initialize Variables
     SEED = -1
     datapath = ""
@@ -75,8 +75,8 @@ function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String
         else
             SIMTREE_RESULTS_PATH = RESULT_DIR
         end
-        
-        starguments=TOML.parsefile("$SIMTREE_RESULTS_PATH/simtree_arguments.toml")
+
+        starguments = TOML.parsefile("$SIMTREE_RESULTS_PATH/simtree_arguments.toml")
         if starguments === nothing
             @warn "starguments empty"
         else
@@ -103,15 +103,15 @@ function stsimulate(simulatefunction::Function; savefile::Bool=true, app::String
         end
         @info "datapath: " * datapath
 
-        PARAMSDICT["stresultspath"]=SIMTREE_RESULTS_PATH
+        PARAMSDICT["stresultspath"] = SIMTREE_RESULTS_PATH
         @show PARAMSDICT
         @debug "Init-Logger closed"
-        
+
         #Prepare Session for Production
-        SimTreeUtils.PrepareSession(session, SIMTREE_RESULTS_PATH, PARAMSDICT, SEED, datapath; drop=true)
+        SimTreeUtils.PrepareSession(session, SIMTREE_RESULTS_PATH, PARAMSDICT, SEED, datapath; drop = true)
 
         @debug "Prod-Logger initialized!"
-        paramscnt = length(first(methods(simulatefunction)).sig.parameters) -1
+        paramscnt = length(first(methods(simulatefunction)).sig.parameters) - 1
         if paramscnt == 4
             results = simulatefunction(session, PARAMSDICT, SEED, datapath)
         else
