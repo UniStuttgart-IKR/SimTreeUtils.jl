@@ -94,7 +94,7 @@ function stsimulate(simulatefunction::Function; savefile::Bool = true, app::Stri
         end
 
         # INFO: This file has the definition from PARAMSDICT
-        include("$SIMTREE_RESULTS_PATH/$(starguments["p"])")
+        PARAMSDICT = include("$SIMTREE_RESULTS_PATH/$(starguments["p"])")
         if haskey(starguments, "DATA_PATH")
             datapath = starguments["DATA_PATH"]
         else
