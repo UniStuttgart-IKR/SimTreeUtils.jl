@@ -17,7 +17,6 @@ using LoggingExtras
 using JSON3
 using OrderedCollections
 using Serialization
-using Plots
 
 export copyresults, findrelpaths, getparameters, simsnum, getsims, getsimspath, SimTreeSession, TestSession, CloseSession, SaveBSON, logValues, saveDB
 
@@ -39,7 +38,7 @@ include("dbhandling_sqlite.jl")     #Storage-Handling SQLite
 include("loghandling_loki.jl")      #Logging Functionality Loki
 include("makroWrapper.jl")          #Macros for easy use
 
-include("basicplot.jl")             #Test Retrieve Data from DB and Plot XY
+# include("basicplot.jl")             #Test Retrieve Data from DB and Plot XY
 include("saveresults.jl")           #Test Save results
 
 end

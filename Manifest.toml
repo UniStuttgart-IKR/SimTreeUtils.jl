@@ -2,7 +2,7 @@
 
 julia_version = "1.12.1"
 manifest_format = "2.0"
-project_hash = "62f862676d74775a13f890959dfb2f9d2ebfc0c9"
+project_hash = "3d806f4a9661c022f25853917c3e05fd4dc55865"
 
 [[deps.Accessors]]
 deps = ["CompositionsBase", "ConstructionBase", "Dates", "InverseFunctions", "MacroTools"]
@@ -1063,7 +1063,7 @@ uuid = "992d4aef-0814-514b-bc4d-f2e9a6c4116f"
 version = "1.0.3"
 
 [[deps.SimTreeUtils]]
-deps = ["BSON", "Base64", "DataFrames", "DimensionalData", "DocStringExtensions", "DuckDB", "JSON3", "Logging", "LoggingExtras", "LokiLogger", "OrderedCollections", "Parameters", "Plots", "Printf", "SQLite", "Serialization", "Suppressor", "TOML"]
+deps = ["BSON", "Base64", "DataFrames", "DimensionalData", "DocStringExtensions", "DuckDB", "JSON3", "Logging", "LoggingExtras", "LokiLogger", "OrderedCollections", "Parameters", "Plots", "Printf", "SQLite", "Serialization", "Suppressor", "TOML", "Transducers"]
 path = "."
 uuid = "f7247de8-1159-4f68-b7ff-a6d1f4924cee"
 version = "0.1.1"
