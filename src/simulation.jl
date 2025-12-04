@@ -41,7 +41,7 @@ function reCreateDuckDB()
     return SimTreeUtils.stsimulate(stLoadResults; savefile = false)
 end
 function testSim()
-    print(pwd())
+    println(pwd())
     return SimTreeUtils.stsimulate(stLoadResults; savefile = false, useDuckDB = true, RESULT_DIR = pwd())
 end
 
@@ -95,6 +95,7 @@ function stsimulate(simulatefunction::Function; savefile::Bool = true, app::Stri
 
         # INFO: This file has the definition from PARAMSDICT
         PARAMSDICT = include("$SIMTREE_RESULTS_PATH/$(starguments["p"])")
+
         if haskey(starguments, "DATA_PATH")
             datapath = starguments["DATA_PATH"]
         else
@@ -103,11 +104,11 @@ function stsimulate(simulatefunction::Function; savefile::Bool = true, app::Stri
         end
         @info "datapath: " * datapath
 
-        PARAMSDICT["stresultspath"] = SIMTREE_RESULTS_PATH
         @show PARAMSDICT
-        @debug "Init-Logger closed"
+        PARAMSDICT["stresultspath"] = SIMTREE_RESULTS_PATH
 
         #Prepare Session for Production
+        #
         SimTreeUtils.PrepareSession(session, SIMTREE_RESULTS_PATH, PARAMSDICT, SEED, datapath; drop = true)
 
         @debug "Prod-Logger initialized!"
