@@ -1,18 +1,47 @@
 name = "SimTreeUtils"
 uuid = "f7247de8-1159-4f68-b7ff-a6d1f4924cee"
-authors = ["fchrstou <filippos.christou@ikr.uni-stuttgart.de> and contributors"]
-version = "0.1.0"
+version = "0.1.1"
+authors = ["fchrstou <filippos.christou@ikr.uni-stuttgart.de> and svnwrsts <st172247@stud.uni-stuttgart.de>"]
 
 [deps]
 BSON = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
+Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+DuckDB = "d2f5444f-75bc-4fdf-ac35-56f514c445e1"
+JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+LoggingExtras = "e6f89c97-d47a-5376-807f-9c37f3926c36"
+LokiLogger = "51d429d1-9683-4c89-86d7-889f440454ef"
+OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
+Serialization = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 Suppressor = "fd094767-a336-5f1f-9728-57cf17d0bbfb"
 TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
+Transducers = "28d57a85-8fef-5791-bfe6-a80928e7c999"
+
+[sources]
+LokiLogger = {rev = "master", url = "https://github.com/schlechter32/LokiLogger.jl.git"}
 
 [compat]
+BSON = "0.3.9"
+Base64 = "1.11.0"
+DataFrames = "1.7.0"
+DimensionalData = "0.29.16"
+DocStringExtensions = "0.9.4"
+DuckDB = "1.2.2"
+JSON3 = "1.14.2"
+OrderedCollections = "1.8.0"
+Parameters = "0.12.3"
+Printf = "1.11.0"
+SQLite = "1.6.1"
+Serialization = "1.11.0"
+Suppressor = "0.2.8"
+TOML = "1.0.3"
+Transducers = "0.4.85"
 julia = "1.7"
 
 [extras]

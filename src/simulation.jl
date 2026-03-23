@@ -5,11 +5,11 @@ Get the SimTree parameters in a `Dictionary{String, Vector{String}}`
 SimTree must be installed.
 Give the root simtree directory
 """
-function getsimtreeparams(simtreedirectory::String=".")::Dict{String,Vector{String}}
-    cmd = Cmd(`SimTree list`; dir=simtreedirectory)
+function getsimtreeparams(simtreedirectory::String = ".")::Dict{String, Vector{String}}
+    cmd = Cmd(`SimTree list`; dir = simtreedirectory)
     iobf = IOBuffer()
     @suppress begin
-        run(pipeline(cmd, stdout=iobf))
+        run(pipeline(cmd, stdout = iobf))
     end
     seekstart(iobf)
 
@@ -31,47 +31,112 @@ function getsimtreeparams(simtreedirectory::String=".")::Dict{String,Vector{Stri
     return parvaldict
 end
 
+function stLoadResults(session::SimTreeUtils.SimTreeSession, PARAMSDICT, SEED, datapath)
+    @debug "[BSON-Load] Loading"
+    results = BSON.load("$(session.SIMTREE_RESULTS_PATH)/study.bson")
+    @debug "[BSON-Load] Loading"
+    return results
+end
+function reCreateDuckDB()
+    return SimTreeUtils.stsimulate(stLoadResults; savefile = false)
+end
+function testSim()
+    println(pwd())
+    return SimTreeUtils.stsimulate(stLoadResults; savefile = false, useDuckDB = true, RESULT_DIR = pwd())
+end
+
 """
 $(TYPEDSIGNATURES)
 
 Wraps the function you want to run through SimTree simulate
 """
-function stsimulate(simulatefunction;savefile=true)
+function stsimulate(simulatefunction::Function; savefile::Bool = true, app::String = "Unnamed", useLokiLogger::Bool = false, useDuckDB::Bool = false, useSQLite::Bool = false, RESULT_DIR::Union{String, Nothing} = nothing)
+    #Initialize Variables
+    SEED = -1
+    datapath = ""
+    SIMTREE_RESULTS_PATH = ""
+    results = nothing
 
+    #Initialize Session
+    session = SimTreeUtils.InitializeSession(app, useLokiLogger, useDuckDB, useSQLite)
 
-    if haskey(ENV, "SIMTREE_RESULTS_PATH")
-        SIMTREE_RESULTS_PATH = ENV["SIMTREE_RESULTS_PATH"]
-    else
-        @warn "Now resultspath set using $(pwd())/results"
-        SIMTREE_RESULTS_PATH = "$(pwd())/results"
-    end
-    starguments=TOML.parsefile("$SIMTREE_RESULTS_PATH/simtree_arguments.toml")
-    print(starguments)
-    if haskey(starguments, "s")
-        str_seed = starguments["s"]
-        println("Seed is:$(str_seed):")
+    #Initialize Environment
+    Logging.with_logger(session.logger) do
+        @debug "Init-Logger initialized!"
 
-        SEED = parse(Int, str_seed)
-    else
-        @warn "Seed not set from ST using 0"
-        SEED = 0
+        if RESULT_DIR === nothing
+            if haskey(ENV, "SIMTREE_RESULTS_PATH")
+                SIMTREE_RESULTS_PATH = ENV["SIMTREE_RESULTS_PATH"]
+            else
+                @warn "Now resultspath set using $(pwd())/results"
+                SIMTREE_RESULTS_PATH = "$(pwd())/results"
+            end
+            @info "SIMTREE_RESULTS_PATH: " * SIMTREE_RESULTS_PATH
+        else
+            SIMTREE_RESULTS_PATH = RESULT_DIR
+        end
+
+        starguments = TOML.parsefile("$SIMTREE_RESULTS_PATH/simtree_arguments.toml")
+        if starguments === nothing
+            @warn "starguments empty"
+        else
+            @info "starguments: " * string(starguments)
+        end
+
+        if haskey(starguments, "s")
+            str_seed = starguments["s"]
+            @info "Seed is: " * str_seed
+
+            SEED = parse(Int, str_seed)
+        else
+            @warn "Seed not set from ST using 0"
+            SEED = 0
+        end
+
+        # INFO: This file has the definition from PARAMSDICT
+        PARAMSDICT = include("$SIMTREE_RESULTS_PATH/$(starguments["p"])")
+
+        if haskey(starguments, "DATA_PATH")
+            datapath = starguments["DATA_PATH"]
+        else
+            @warn "Datapath not set using pwd/data"
+            datapath = "$(pwd())/data"
+        end
+        @info "datapath: " * datapath
+
+        @show PARAMSDICT
+        PARAMSDICT["stresultspath"] = SIMTREE_RESULTS_PATH
+
+        #Prepare Session for Production
+        #
+        SimTreeUtils.PrepareSession(session, SIMTREE_RESULTS_PATH, PARAMSDICT, SEED, datapath; drop = true)
+
+        @debug "Prod-Logger initialized!"
+        paramscnt = length(first(methods(simulatefunction)).sig.parameters) - 1
+        if paramscnt == 4
+            results = simulatefunction(session, PARAMSDICT, SEED, datapath)
+        else
+            results = simulatefunction(PARAMSDICT, SEED, datapath)
+        end
+        #SimTreeUtils.ViewDBSchema(session)
+
+        SimTreeUtils.CloseSession(session)
+
+        # @show results
+        if savefile
+            @debug "[BSON-Save] Saving"
+            BSON.bson("$SIMTREE_RESULTS_PATH/study.bson", results)
+            @debug "[BSON-Save] Saved"
+        end
+
+        if session.useDuckDB
+            @debug "[DuckDB-Save] Saving"
+            SimTreeUtils.SaveBSON(session, results)
+            @debug "[DuckDB-Save] Saved"
+        end
+        @debug "Prod-Logger closed"
     end
-    # INFO: This file has the definition from PARAMSDICT
-    include("$SIMTREE_RESULTS_PATH/$(starguments["p"])")
-    if haskey(starguments, "DATA_PATH")
-        datapath = starguments["DATA_PATH"]
-    else
-        @warn "Datapath not set using pwd/data"
-        datapath = "$(pwd())/data"
-    end
-    PARAMSDICT["stresultspath"]=SIMTREE_RESULTS_PATH
-    @show PARAMSDICT
-    results = simulatefunction(PARAMSDICT, SEED,datapath)
-    # @show results
-    if savefile
-    BSON.bson("$SIMTREE_RESULTS_PATH/study.bson", results)
-    end
+
+    #Return Data
     return results
-
-
 end
